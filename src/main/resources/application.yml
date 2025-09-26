@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: volcano
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        options:
+          model: qwen3:latest
+          temperature: 0.1
+    chat:
+      enabled: true
+    metrics:
+      enabled: true
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    tags:
+      application: volcano
+  doc:
+    api-docs:
+      enabled: true
+    enable-kotlin: true
+    swagger-ui:
+      enabled: true
