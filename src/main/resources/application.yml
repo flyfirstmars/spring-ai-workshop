@@ -1,28 +1,25 @@
 spring:
   application:
-    name: volcano
+    name: spring-ai-workshop
+  main:
+    web-application-type: none
+  jmx:
+    enabled: false
+  shell:
+    interactive:
+      enabled: true
+    noninteractive:
+      enabled: false
   ai:
-    ollama:
-      base-url: http://localhost:11434
-      chat:
-        options:
-          model: qwen3:latest
-          temperature: 0.1
-    chat:
-      enabled: true
-    metrics:
-      enabled: true
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,prometheus
-  metrics:
-    tags:
-      application: volcano
-  doc:
-    api-docs:
-      enabled: true
-    enable-kotlin: true
-    swagger-ui:
-      enabled: true
+    openai:
+      api-key: ${OPENAI_API_KEY}
+    retry:
+      max-attempts: 3
+      backoff:
+        initial-interval: 1s
+        multiplier: 2
+        max-interval: 10s
+logging:
+  level:
+    org.springframework.ai: DEBUG
+    org.springframework.web.client: DEBUG
