@@ -1,31 +1,39 @@
-# Workshop Exercises
+# Exploration Exercises
 
-Use these exercises during the first two sessions to reinforce VoyagerMate concepts. They are grouped by session but can be blended for different skill levels.
+These prompts help you inspect the VoyagerMate codebase and reshape it to match the experience you want to deliver. Treat each idea as a jumping-off point: read the implementation, understand the current behaviour, then adapt or rebuild it using the concepts from `docs/session-01.md` and `docs/session-02.md`.
 
-## Session 1 — Augmented LLM
-1. **Text Concierge Enhancements**
-   - Extend the `chat` command to accept traveller profile fields (age range, accessibility needs) and inject them into the prompt.
-   - Expose latency metrics via Micrometer and log the response metadata for shell output.
-2. **Multimodal Mastery**
-   - Update `describe-image` to accept multiple files and compare suggestions side-by-side.
-   - Enhance `transcribe-audio` to auto-detect WAV or MP3 MIME types without flags *(requires transcription deployment)*.
-3. **Structured Output Builder**
-   - Introduce a `visaNotes` field in `ItineraryPlan` populated from a new `@Tool`.
-   - Validate in unit tests that the LLM fills every day in the itinerary before printing to the shell.
-4. **Travel Tools**
-   - Implement a `@Tool` that recommends public transit passes by city.
-   - Add graceful fallbacks when tools throw exceptions or return empty data, surfacing hints in shell output.
+## Project Map: Where Things Live
 
-## Session 2 — Agents & Workflows
-1. **Workflow Branching**
-   - Modify `ItineraryWorkflowService` to spawn a parallel call that drafts dining reservations.
-   - Combine the results into a richer `TripWorkflowSummary` and display via `workflow`.
-2. **Agent Prompt Engineering**
-   - Encourage VoyagerMate to ask clarifying questions before finalising plans in `plan-itinerary`.
-   - Track which tools were invoked and add a summary section to the command output.
-3. **Budget Intelligence**
-   - Expand `VoyagerTools.estimateBudget` to account for traveller count and hotel class.
-   - Surface a cost breakdown in `plan-itinerary` and format currency per locale.
-4. **Voice Concierge** *(optional — transcription deployment required)*
-   - Build a scheduled job that polls recorded audio notes, calls `transcribe-audio`, and stores summaries.
-   - Notify participants when transcription confidence is low and a manual follow-up is recommended.
+| Area | Key Classes / Files | Typical Modifications |
+|------|----------------------|------------------------|
+| **Shell commands** | `src/main/java/.../voyagermate/shell/VoyagerMateCommands.java`<br>`VoyagerMateShellConfiguration.java` | Wiring prompts, adjusting command options, formatting console output, adding new commands. |
+| **Core services** | `voyagermate/core/VoyagerMateService.java`<br>`voyagermate/workflow/ItineraryWorkflowService.java` | Implementing workflows, adding validation, orchestrating tool calls, integrating advisors. |
+| **Tools & integrations** | `voyagermate/tools/VoyagerTools.java`<br>`voyagermate/tools/...` | Defining `@Tool` methods, refining descriptions/parameters, handling external API failures, adding return-direct flows. |
+| **Configuration** | `config/ChatClientConfig.java`<br>`application.yml` | Setting default prompts, model options, advisors, logging levels, environment-specific overrides. |
+| **Models & outputs** | `voyagermate/model/*`<br>`ItineraryPlan`, `TripWorkflowSummary` | Adjusting structured output schemas, adding new fields, updating converters/tests. |
+| **Docs & prompts** | `docs/session-01.md`, `docs/session-02.md`, `src/main/resources/prompts/*` | Capturing theory, maintaining shared prompt templates, documenting new patterns. |
+
+Use this map as a reference when exploring each exercise—trace the flow from shell command → service/workflow → tools/models so you know exactly which layer you are modifying.
+
+## Conversational Foundations
+- Study `chat` command wiring in `VoyagerMateCommands`. How does the default system prompt steer tone and what metadata is exposed? Experiment with alternative prompt templates or advisor combinations, then tailor logging/metrics to highlight the signals you care about most.
+- Inspect the multimodal flow (`describe-image`, `transcribe-audio`). Identify assumptions about files, MIME types, and prompts. Rework the pipeline to support the media strategy you prefer—perhaps comparing multiple images, summarising audio for different personas, or streaming responses to the console.
+- Review `ItineraryPlan` + `BeanOutputConverter`. Decide whether the schema and validation match your travel scenarios. Adjust fields, introduce new records, or change temperature/response format settings to achieve the reliability targets you set.
+
+## Tooling and Retrieval Experiments
+- Audit `VoyagerTools` descriptions and parameters. Where could better wording, stricter typing, or poka‑yoke techniques reduce misuse? Extend, replace, or remove tools until the set feels minimal and high-signal.
+- Trace how `plan-itinerary` and related services combine tool results with structured outputs. Modify the flow to incorporate just-in-time retrieval, additional advisors, or external memory. Consider new evaluation checkpoints so you can observe tool usage over time.
+- Explore the vector-store integration (if configured). Prototype your own RAG strategy: change chunking logic, add semantic filters, or plug in a different store implementation to see how it affects itinerary grounding.
+
+## Workflow and Agent Patterns
+- Walk through `ItineraryWorkflowService` to identify where deterministic sequencing helps or hurts. Try alternative workflow patterns: prompt chaining with additional validations, routing to specialised models, or parallel branches that feed into richer summaries.
+- Design an orchestrator/worker experiment inspired by the agent blueprint in `docs/session-02.md`. Decide which subtasks deserve dedicated workers, how they should exchange information, and when to hand control back to a human.
+- Prototype evaluator–optimizer loops for content you want to polish (e.g., narrated itineraries). Capture metrics so you can judge whether the quality gain outweighs additional latency/cost.
+
+## Observability, Cost, and Safety
+- Instrument token usage, tool call frequency, and latency. Build dashboards or simple console summaries that surface the trade-offs you find interesting.
+- Implement context compaction or external memory for long-running conversations. Measure how these strategies affect both cost and accuracy in your test scenarios.
+- Stress-test guardrails: iteration limits, tool argument validation, and human-in-the-loop checkpoints. Adjust system prompts and safety logic until they reflect the trust boundaries you need.
+
+## Make It Yours
+Pick any flow—chat concierge, itinerary builder, workflow orchestrator—and reimagine it. Swap models, rewire prompts, or integrate third-party APIs. Document what you changed, why it matters, and how you validated the behaviour. The goal is to practice treating Spring AI components as building blocks rather than fixed scripts.
