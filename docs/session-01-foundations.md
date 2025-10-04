@@ -17,7 +17,7 @@
 
 ### Demo — Text Conversation
 ```bash
-chat --prompt "Help me plan a weekend escape from Paris in October."
+chat --prompt "Plan an accessible autumn weekend in Lisbon for two friends arriving from Paris."
 ```
 - Discuss latency, metadata, and how we surface them via `ChatResponsePayload` in the CLI output.
 
@@ -27,14 +27,17 @@ chat --prompt "Help me plan a weekend escape from Paris in October."
 
 ### Demo — Image Insights
 ```bash
-describe-image --file assets/barcelona.jpg \
-               --prompt "Suggest activities inspired by this photo"
+describe-image --file src/main/resources/images/background-vacation1.jpeg --prompt "Suggest a mid-range daytime plan inspired by this beach scene."
+```
+
+### Variation — Evening Atmosphere
+```bash
+describe-image --file src/main/resources/images/background-vacation2.jpeg --prompt "Design an evening food crawl that matches the atmosphere in this image."
 ```
 
 ### Demo — Audio Notes *(optional: requires dedicated transcription deployment)*
 ```bash
-transcribe-audio --file assets/voice-note.mp3 \
-                 --prompt "What did the traveller mention in this recording?"
+transcribe-audio --file src/main/resources/audio/traveller-note.m4a --prompt "Summarise the traveller note and suggest next booking steps."
 ```
 - Explain that the audio command relies on a separate Azure Whisper/GPT-4o Transcribe deployment; if unavailable, share a prerecorded transcript instead.
 

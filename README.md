@@ -28,9 +28,10 @@ Hands-on material for the "Building Intelligent Java Travel Assistants" workshop
 ```
 The application starts an interactive Spring Shell session (`voyagermate>`) with no embedded web server. Use the commands below to explore VoyagerMate features:
 
-- `chat --prompt "Help me plan a weekend escape from Paris in October."`
-- `describe-image --file assets/barcelona.jpg --prompt "Suggest activities inspired by this photo"`
-- `transcribe-audio --file assets/voice-note.mp3` *(requires an Azure Whisper/GPT-4o Transcribe deployment; otherwise skip this exercise)*
+- `chat --prompt "Plan an accessible autumn weekend in Lisbon for two friends arriving from Paris."`
+- `describe-image --file src/main/resources/images/background-vacation1.jpeg --prompt "Suggest a mid-range daytime plan inspired by this beach scene."`
+- `describe-image --file src/main/resources/images/background-vacation2.jpeg --prompt "Design an evening food crawl that matches the atmosphere in this image."`
+- `transcribe-audio --file src/main/resources/audio/traveller-note.m4a --prompt "Summarise the traveller note and suggest next booking steps."` *(requires an Azure Whisper/GPT-4o Transcribe deployment; otherwise skip this exercise)*
 - `plan-itinerary --name Mira --origin Amsterdam --destination Tokyo --depart 2025-04-10 --return 2025-04-20 --budget balanced --interests food,design,nightlife`
 - `workflow --name Mira --origin Amsterdam --destination Tokyo --depart 2025-04-10 --return 2025-04-20 --budget balanced --interests food,design,nightlife`
 
