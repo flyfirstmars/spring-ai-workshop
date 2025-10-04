@@ -43,23 +43,27 @@ public class VoyagerMateCommands {
 
     @ShellMethod(key = "chat", value = "Chat with VoyagerMate using a text prompt.")
     public String chat(@ShellOption(help = "Prompt for VoyagerMate") String prompt) {
-        var stream = voyagerMateService.streamChat(new TextChatRequest(prompt));
+        try {
+            var stream = voyagerMateService.streamChat(new TextChatRequest(prompt));
 
-        stream.chunks()
-                .doOnNext(chunk -> {
-                    System.out.print(chunk);
-                    System.out.flush();
-                })
-                .blockLast();
+            stream.chunks()
+                    .doOnNext(chunk -> {
+                        System.out.print(chunk);
+                        System.out.flush();
+                    })
+                    .blockLast();
 
-        System.out.println();
+            System.out.println();
 
-        var payload = stream.completion().block();
-        if (payload == null) {
-            return "Model: azure-openai" + System.lineSeparator()
-                    + "Latency: 0 ms";
+            var payload = stream.completion().block();
+            if (payload == null) {
+                return "Model: azure-openai" + System.lineSeparator()
+                        + "Latency: 0 ms";
+            }
+            return formatChatResponse(payload, false);
+        } catch (Exception ex) {
+            return handleException(ex);
         }
-        return formatChatResponse(payload, false);
     }
 
     @ShellMethod(key = "describe-image", value = "Send an image and prompt to VoyagerMate.")
@@ -67,11 +71,30 @@ public class VoyagerMateCommands {
             @ShellOption(value = {"-f", "--file"}, help = "Path to the image file") String imagePath,
             @ShellOption(value = {"-p", "--prompt"}, defaultValue = "Spot travel inspiration from this image", help = "Prompt to guide VoyagerMate") String prompt
     ) {
-        var imagePathResolved = resolvePath(imagePath);
-        var base64 = encodeFile(imagePathResolved);
-        var mimeType = probeMimeType(imagePathResolved, "image/jpeg");
-        var response = voyagerMateService.analyzeImage(new ImageChatRequest(prompt, base64, mimeType));
-        return formatChatResponse(response);
+        try {
+            var imagePathResolved = resolvePath(imagePath);
+            var base64 = encodeFile(imagePathResolved);
+            var mimeType = probeMimeType(imagePathResolved, "image/jpeg");
+            var stream = voyagerMateService.streamAnalyzeImage(new ImageChatRequest(prompt, base64, mimeType));
+
+            stream.chunks()
+                    .doOnNext(chunk -> {
+                        System.out.print(chunk);
+                        System.out.flush();
+                    })
+                    .blockLast();
+
+            System.out.println();
+
+            var payload = stream.completion().block();
+            if (payload == null) {
+                return "Model: azure-openai" + System.lineSeparator()
+                        + "Latency: 0 ms";
+            }
+            return formatChatResponse(payload, false);
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
     }
 
     @ShellMethod(key = "transcribe-audio", value = "Send a recorded note to VoyagerMate for transcription and advice.")
@@ -96,18 +119,22 @@ public class VoyagerMateCommands {
             @ShellOption(value = {"-b", "--budget"}, defaultValue = ShellOption.NULL, help = "Budget focus (e.g. budget, balanced, premium)") String budget,
             @ShellOption(value = {"-i", "--interests"}, defaultValue = ShellOption.NULL, help = "Comma separated traveller interests") String interests
     ) {
-        var request = new TripPlanRequest(
-                traveller,
-                origin,
-                destination,
-                parseDate(depart),
-                parseDate(ret),
-                budget,
-                parseList(interests)
-        );
+        try {
+            var request = new TripPlanRequest(
+                    traveller,
+                    origin,
+                    destination,
+                    parseDate(depart),
+                    parseDate(ret),
+                    budget,
+                    parseList(interests)
+            );
 
-        ItineraryPlan plan = voyagerMateService.planTrip(request);
-        return toJson(plan);
+            ItineraryPlan plan = voyagerMateService.planTrip(request);
+            return toJson(plan);
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
     }
 
     @ShellMethod(key = "workflow", value = "Run the VoyagerMate workflow orchestrator for a trip plan.")
@@ -142,8 +169,15 @@ public class VoyagerMateCommands {
         var builder = new StringBuilder()
                 .append("Model: ")
                 .append(payload.model())
-                .append(System.lineSeparator())
-                .append("Latency: ")
+                .append(System.lineSeparator());
+
+        if (!payload.toolCalls().isEmpty()) {
+            builder.append("ToolCall: ")
+                    .append(String.join(", ", payload.toolCalls()))
+                    .append(System.lineSeparator());
+        }
+
+        builder.append("Latency: ")
                 .append(payload.latencyMs())
                 .append(" ms");
 
@@ -199,5 +233,9 @@ public class VoyagerMateCommands {
         } catch (JsonProcessingException ex) {
             throw new IllegalStateException("Failed to render JSON", ex);
         }
+    }
+
+    private String handleException(Exception ex) {
+        return VoyagerMateExceptionHandler.handleGenericError(ex);
     }
 }

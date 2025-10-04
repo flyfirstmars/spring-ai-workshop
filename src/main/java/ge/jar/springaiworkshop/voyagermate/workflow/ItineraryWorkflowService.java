@@ -16,17 +16,17 @@ public class ItineraryWorkflowService {
 
     public TripWorkflowSummary orchestrate(TripPlanRequest request) {
         var interests = request.interests() == null || request.interests().isEmpty()
-            ? "unspecified"
-            : String.join(", ", request.interests());
+                ? "unspecified"
+                : String.join(", ", request.interests());
 
         var baseContext = "Traveller: %s\nFrom: %s\nTo: %s\nDates: %s to %s\nBudget focus: %s\nInterests: %s".formatted(
-            request.travellerName(),
-            request.originCity(),
-            request.destinationCity(),
-            request.departureDate(),
-            request.returnDate(),
-            request.budgetFocus(),
-            interests
+                request.travellerName(),
+                request.originCity(),
+                request.destinationCity(),
+                request.departureDate(),
+                request.returnDate(),
+                request.budgetFocus(),
+                interests
         );
 
         var discovery = runStep("Summarise the traveller's key goals, constraints, and any clarifications needed.", baseContext);
@@ -39,9 +39,9 @@ public class ItineraryWorkflowService {
 
     private String runStep(String instruction, String context) {
         return chatClient.prompt()
-            .system("You are orchestrating a travel-planning workflow. Complete the requested step succinctly.")
-            .user(instruction + "\n---\n" + context)
-            .call()
-            .content();
+                .system("You are orchestrating a travel-planning workflow. Complete the requested step succinctly.")
+                .user(instruction + "\n---\n" + context)
+                .call()
+                .content();
     }
 }

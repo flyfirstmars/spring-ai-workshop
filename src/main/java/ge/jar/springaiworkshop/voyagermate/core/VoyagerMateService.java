@@ -13,6 +13,9 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import org.springframework.ai.azure.openai.AzureOpenAiAudioTranscriptionModel;
@@ -72,6 +75,21 @@ public class VoyagerMateService {
                 .call());
     }
 
+    public ChatStreamPayload streamAnalyzeImage(ImageChatRequest request) {
+        var media = Media.builder()
+                .mimeType(resolveMime(request.mimeType(), MimeTypeUtils.IMAGE_JPEG))
+                .data(decode(request.imageBase64()))
+                .build();
+        var userMessage = UserMessage.builder()
+                .text(request.prompt())
+                .media(media)
+                .build();
+        return executeStreamingPrompt(() -> chatClient.prompt()
+                .messages(userMessage)
+                .system("Describe the travel-relevant details of the provided image before giving suggestions.")
+                .stream());
+    }
+
     public ChatResponsePayload interpretAudio(AudioChatRequest request) {
         var mimeType = resolveMime(request.mimeType(), MimeTypeUtils.parseMimeType("audio/mpeg"));
         var audioBytes = decode(request.audioBase64());
@@ -108,15 +126,7 @@ public class VoyagerMateService {
                 ? "unspecified"
                 : String.join(", ", request.interests());
 
-        var dateRange = formatDate(request.departureDate()) + " to " + formatDate(request.returnDate());
-
-        var userPrompt = "Plan a journey based on these preferences:\n" +
-                "Traveller: " + defaultValue(request.travellerName(), "Guest Traveller") + "\n" +
-                "Origin: " + defaultValue(request.originCity(), "Unknown") + "\n" +
-                "Destination: " + defaultValue(request.destinationCity(), "Unknown") + "\n" +
-                "Dates: " + dateRange + "\n" +
-                "Budget level: " + defaultValue(request.budgetFocus(), "flexible") + "\n" +
-                "Interests: " + interests;
+        var userPrompt = getString(request, interests);
 
         var response = chatClient.prompt()
                 .system(system)
@@ -127,9 +137,22 @@ public class VoyagerMateService {
         return converter.convert(Objects.requireNonNull(response.content()));
     }
 
+    private String getString(TripPlanRequest request, String interests) {
+        var dateRange = formatDate(request.departureDate()) + " to " + formatDate(request.returnDate());
+
+        var userPrompt = "Plan a journey based on these preferences:\n" +
+                "Traveller: " + defaultValue(request.travellerName(), "Guest Traveller") + "\n" +
+                "Origin: " + defaultValue(request.originCity(), "Unknown") + "\n" +
+                "Destination: " + defaultValue(request.destinationCity(), "Unknown") + "\n" +
+                "Dates: " + dateRange + "\n" +
+                "Budget level: " + defaultValue(request.budgetFocus(), "flexible") + "\n" +
+                "Interests: " + interests;
+        return userPrompt;
+    }
+
     private ChatStreamPayload executeStreamingPrompt(StreamSupplier supplier) {
         var started = Instant.now();
-        var spec = supplier.get();
+        var spec = executeOnVirtualThread(supplier::get, "Failed to prepare stream");
         var firstTokenLatency = new AtomicLong(-1);
 
         Flux<ChatClientResponse> responses = spec.chatClientResponse()
@@ -150,24 +173,22 @@ public class VoyagerMateService {
 
     private ChatResponsePayload executePrompt(ResponseSupplier supplier) {
         var started = Instant.now();
-        var spec = supplier.get();
+        var spec = executeOnVirtualThread(supplier::get, "Chat client call failed");
         var latency = Duration.between(started, Instant.now()).toMillis();
         var response = spec.chatClientResponse();
-        if (response == null) {
-            return new ChatResponsePayload("", "azure-openai", latency);
-        }
 
         var chatResponse = response.chatResponse();
         var reply = chatResponse != null ? extractContent(chatResponse) : "";
         var metadata = chatResponse != null ? chatResponse.getMetadata() : null;
         var model = (metadata != null && metadata.getModel() != null) ? metadata.getModel() : "azure-openai";
+        var toolCalls = chatResponse != null ? extractToolCalls(chatResponse) : List.<String>of();
 
-        return new ChatResponsePayload(reply, model, latency);
+        return new ChatResponsePayload(reply, model, latency, toolCalls);
     }
 
     private ChatResponsePayload buildStreamPayload(List<ChatClientResponse> responses, AtomicLong latencyRef, Instant started) {
         if (responses.isEmpty()) {
-            return new ChatResponsePayload("", "azure-openai", Duration.between(started, Instant.now()).toMillis());
+            return new ChatResponsePayload("", "azure-openai", Duration.between(started, Instant.now()).toMillis(), List.of());
         }
 
         var reply = responses.stream()
@@ -183,12 +204,19 @@ public class VoyagerMateService {
                 .reduce((_, second) -> second)
                 .orElse("azure-openai");
 
+        var toolCalls = responses.stream()
+                .map(ChatClientResponse::chatResponse)
+                .filter(Objects::nonNull)
+                .flatMap(response -> extractToolCalls(response).stream())
+                .distinct()
+                .collect(Collectors.toList());
+
         var latency = latencyRef.get();
         if (latency < 0) {
             latency = Duration.between(started, Instant.now()).toMillis();
         }
 
-        return new ChatResponsePayload(reply, model, latency);
+        return new ChatResponsePayload(reply, model, latency, toolCalls);
     }
 
     private String extractContent(ChatResponse chatResponse) {
@@ -208,6 +236,24 @@ public class VoyagerMateService {
         }
         var model = chatResponse.getMetadata().getModel();
         return model == null ? "" : model;
+    }
+
+    private List<String> extractToolCalls(ChatResponse chatResponse) {
+        if (chatResponse == null || chatResponse.getResult() == null) {
+            return List.of();
+        }
+
+        var result = chatResponse.getResult();
+        var toolCalls = result.getOutput().getToolCalls();
+
+        if (toolCalls == null || toolCalls.isEmpty()) {
+            return List.of();
+        }
+
+        return toolCalls.stream()
+                .map(toolCall -> toolCall.name())
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
 
     private MimeType resolveMime(String value, MimeType fallback) {
@@ -251,5 +297,22 @@ public class VoyagerMateService {
     @FunctionalInterface
     private interface StreamSupplier {
         ChatClient.StreamResponseSpec get();
+    }
+
+    private <T> T executeOnVirtualThread(Callable<T> task, String failureMessage) {
+        var future = new FutureTask<>(task);
+        Thread.ofVirtual().start(future);
+        try {
+            return future.get();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new IllegalStateException(failureMessage + " (interrupted)", ex);
+        } catch (ExecutionException ex) {
+            var cause = ex.getCause() != null ? ex.getCause() : ex;
+            if (cause instanceof RuntimeException runtimeEx) {
+                throw runtimeEx;
+            }
+            throw new IllegalStateException(failureMessage, cause);
+        }
     }
 }

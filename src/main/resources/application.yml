@@ -2,7 +2,7 @@ spring:
   application:
     name: spring-ai-workshop
   main:
-    web-application-type: none
+    web-application-type: servlet
   jmx:
     enabled: false
   shell:
@@ -29,7 +29,18 @@ spring:
         initial-interval: 1s
         multiplier: 2
         max-interval: 10s
+  threads:
+    virtual:
+      enabled: true
 logging:
   level:
     org.springframework.ai: DEBUG
     org.springframework.web.client: DEBUG
+    # Suppress RMI warnings
+    '[sun.rmi.transport.tcp]': ERROR
+    # Suppress JLine native warnings
+    '[org.jline]': WARN
+    # Suppress Netty version mismatch info
+    '[com.azure.core.http.netty.implementation.NettyUtility]': WARN
+    # Suppress Azure SDK Netty version warnings
+    '[com.azure]': WARN

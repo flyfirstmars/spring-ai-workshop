@@ -28,8 +28,9 @@
     </scm>
     <properties>
         <java.version>25</java.version>
-        <spring-ai.version>1.0.2</spring-ai.version>
+        <spring-ai.version>1.0.3</spring-ai.version>
         <spring-shell.version>3.4.1</spring-shell.version>
+        <netty.version>4.1.127.Final</netty.version>
     </properties>
     <dependencies>
 
@@ -83,6 +84,14 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+            <!-- Netty BOM for consistent versions -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>${netty.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -91,6 +100,14 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>ge.jar.springaiworkshop.SpringAiWorkshopApplication</mainClass>
+                    <jvmArguments>
+                        --enable-native-access=ALL-UNNAMED
+                        --add-opens=java.base/sun.nio.ch=ALL-UNNAMED
+                        --add-opens=java.base/java.io=ALL-UNNAMED
+                    </jvmArguments>
+                </configuration>
             </plugin>
         </plugins>
     </build>
