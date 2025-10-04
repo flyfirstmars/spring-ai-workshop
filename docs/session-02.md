@@ -77,13 +77,18 @@ These patterns compose like software design patterns—master each in isolation 
 Break a task into sequential calls where each step validates the previous output.
 
 ```java
-Outline outline = chatClient.prompt().user(request).call().entity(Outline.class);
+Outline outline = chatClient.prompt()
+        .user(request)
+        .call()
+        .entity(Outline.class);
 ValidationResult validation = validator.validate(outline);
 if(!validation.
 
-valid()){outline =
+valid()){
+outline =
 
-retryWithFeedback(outline, validation); }
+retryWithFeedback(outline, validation);
+}
 DetailedItinerary itinerary = writer.create(outline);
 ```
 
@@ -94,7 +99,10 @@ Use when tasks naturally decompose and intermediate checks improve reliability.
 Classify input, then hand off to specialised handlers or model configurations.
 
 ```java
-QueryType type = classifier.prompt().user(rawQuestion).call().entity(QueryType.class);
+QueryType type = classifier.prompt()
+        .user(rawQuestion)
+        .call()
+        .entity(QueryType.class);
 return switch(type){
         case SIMPLE ->fastClient.
 
@@ -144,7 +152,9 @@ Draft draft = generator.generate(spec);
 Feedback feedback = evaluator.review(draft);
     if(feedback.
 
-accepted())return draft;
+accepted()){
+        return draft;
+    }
 spec =spec.
 
 withReviewerNotes(feedback);

@@ -207,7 +207,7 @@ getResult().
 getOutput().
 
 getToolCalls()
-        .
+            .
 
 forEach(call ->log.
 
@@ -232,11 +232,14 @@ OpenAiApiException ex){
 sleep(1000);
         return chatClient.
 
-prompt().
+prompt()
+                .
 
-user(prompt).
+user(prompt)
+                .
 
-call().
+call()
+                .
 
 content();
     }

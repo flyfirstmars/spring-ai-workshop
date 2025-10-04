@@ -41,24 +41,28 @@ material.
 ./mvnw spring-boot:run
 ```
 
-The application starts an interactive Spring Shell session (`voyagermate>`) with no embedded web server. Use the
-commands below to explore VoyagerMate features:
+The application starts an interactive Spring Shell session (`voyagermate>`). Try the following commands and adapt them
+to your use case:
 
-- `chat --prompt "Plan an accessible autumn weekend in Lisbon for two friends arriving from Paris."`
--
+```shell
+shell:>chat --prompt "Plan a weekend in Lisbon with accessibility tips."
+shell:>describe-image \
+  --file src/main/resources/images/background-vacation1.jpeg \
+  --prompt "Describe this beach scene."
+shell:>transcribe-audio \
+  --file src/main/resources/audio/traveller-note.m4a \
+  --prompt "Summarise this voice note."
+shell:>plan-itinerary \
+  --name Mira --origin Amsterdam --destination Tokyo \
+  --depart 2025-04-10 --return 2025-04-20 \
+  --budget balanced --interests food,design
+shell:>workflow \
+  --name Mira --origin Amsterdam --destination Tokyo \
+  --depart 2025-04-10 --return 2025-04-20 \
+  --budget balanced --interests food,design
+```
 
-`describe-image --file src/main/resources/images/background-vacation1.jpeg --prompt "Suggest a mid-range daytime plan inspired by this beach scene."`
--
-`describe-image --file src/main/resources/images/background-vacation2.jpeg --prompt "Design an evening food crawl that matches the atmosphere in this image."`
--
-`transcribe-audio --file src/main/resources/audio/traveller-note.m4a --prompt "Summarise the traveller note and suggest next booking steps."`
-*(requires an Azure Whisper/GPT-4o Transcribe deployment; otherwise skip this exercise)*
-
--
-
-`plan-itinerary --name Mira --origin Amsterdam --destination Tokyo --depart 2025-04-10 --return 2025-04-20 --budget balanced --interests food,design,nightlife`
--
-`workflow --name Mira --origin Amsterdam --destination Tokyo --depart 2025-04-10 --return 2025-04-20 --budget balanced --interests food,design,nightlife`
+*Requires a transcription deployment for audio commands.*
 
 ## Documentation
 
@@ -132,7 +136,7 @@ response metadata.*
   models.
 - Configuration and bootstrapping remain in `ge.jar.springaiworkshop.config` to emphasise cross-feature infrastructure.
 
-## Next steps
+## Next steps (Coming soon)
 
 Session 3 (data integration) and Session 4 (validation/evaluation) will build on this baseline. Update the
 `VoyagerTools` class with organisation-specific data sources and expand the workflow service to demonstrate advanced
