@@ -1,7 +1,8 @@
-# VoyagerMate Technical Reference
+# Technical Reference
 
 This document consolidates technical implementation details, exception handling strategies, and advanced features for
-the VoyagerMate Spring AI workshop project.
+the "AI Native Product Development using SpringAI" workshop. VoyagerMate—the travel concierge example—provides the
+concrete code references.
 
 ## Table of Contents
 
