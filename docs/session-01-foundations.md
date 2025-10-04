@@ -7,7 +7,7 @@
 
 ## 1. Kick-off (15 min)
 - Welcome travellers and introduce **VoyagerMate**.
-- Set goals: text, image, and audio interactions + itinerary generation.
+- Set goals: text and image interactions + itinerary generation (audio demo optional).
 - Confirm Azure OpenAI deployments and environment variables (see `README.md`).
 
 ## 2. Spring AI ChatClient Overview (40 min)
@@ -31,12 +31,12 @@ describe-image --file assets/barcelona.jpg \
                --prompt "Suggest activities inspired by this photo"
 ```
 
-### Demo — Audio Notes
+### Demo — Audio Notes *(optional: requires dedicated transcription deployment)*
 ```bash
 transcribe-audio --file assets/voice-note.mp3 \
                  --prompt "What did the traveller mention in this recording?"
 ```
-- Highlight how the service injects transcription instructions in the system prompt.
+- Explain that the audio command relies on a separate Azure Whisper/GPT-4o Transcribe deployment; if unavailable, share a prerecorded transcript instead.
 
 ## 4. Structured Output (45 min)
 - Introduce `BeanOutputConverter` for type-safe itineraries (`ItineraryPlan`).

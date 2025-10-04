@@ -6,7 +6,7 @@
 ---
 
 ## 1. Recap & Objectives (15 min)
-- Review Session 1 achievements (text/image/audio, tools, itineraries).
+- Review Session 1 achievements (text/image, optional audio), tools, itineraries.
 - Set the stage for orchestrating multi-step planning experiences.
 
 ## 2. Workflow vs Agent Primer (30 min)
@@ -43,13 +43,13 @@ workflow --name Mira --origin Amsterdam --destination Tokyo \
 3. Capture the tool outputs in the itinerary response and display them via the shell command.
 
 ## 5. Observability & Operational Notes (30 min)
-- Highlight latency tracking printed in `chat`, `describe-image`, and `transcribe-audio` commands.
+- Highlight latency tracking printed in `chat`, `describe-image`, and (when enabled) `transcribe-audio` commands.
 - Brainstorm metrics/events to add in future sessions (token usage, tool telemetry).
 - Note placeholders for Postgres/Rancher Desktop introduction (Session 3 teaser).
 
 ## 6. Capstone Challenge (40 min)
 - Teams design a concierge flow using shell commands:
-  - Receive traveller voice note → summarise with `transcribe-audio`.
+  - Receive traveller voice note → summarise with `transcribe-audio` (skip or use a provided transcript if no transcription deployment is available).
   - Produce itinerary with `plan-itinerary`.
   - Run `workflow` to capture risks and next actions.
 - Present strategies for UI integration and state hand-off.

@@ -64,22 +64,24 @@ public class VoyagerMateCommands {
 
     @ShellMethod(key = "describe-image", value = "Send an image and prompt to VoyagerMate.")
     public String describeImage(
-            @ShellOption(value = {"-f", "--file"}, help = "Path to the image file") Path imagePath,
+            @ShellOption(value = {"-f", "--file"}, help = "Path to the image file") String imagePath,
             @ShellOption(value = {"-p", "--prompt"}, defaultValue = "Spot travel inspiration from this image", help = "Prompt to guide VoyagerMate") String prompt
     ) {
-        var base64 = encodeFile(imagePath);
-        var mimeType = probeMimeType(imagePath, "image/jpeg");
+        var imagePathResolved = resolvePath(imagePath);
+        var base64 = encodeFile(imagePathResolved);
+        var mimeType = probeMimeType(imagePathResolved, "image/jpeg");
         var response = voyagerMateService.analyzeImage(new ImageChatRequest(prompt, base64, mimeType));
         return formatChatResponse(response);
     }
 
     @ShellMethod(key = "transcribe-audio", value = "Send a recorded note to VoyagerMate for transcription and advice.")
     public String transcribeAudio(
-            @ShellOption(value = {"-f", "--file"}, help = "Path to the audio file") Path audioPath,
+            @ShellOption(value = {"-f", "--file"}, help = "Path to the audio file") String audioPath,
             @ShellOption(value = {"-p", "--prompt"}, defaultValue = "What did the traveller mention in this recording?", help = "Prompt to guide VoyagerMate") String prompt
     ) {
-        var base64 = encodeFile(audioPath);
-        var mimeType = probeMimeType(audioPath, "audio/mpeg");
+        var audioPathResolved = resolvePath(audioPath);
+        var base64 = encodeFile(audioPathResolved);
+        var mimeType = probeMimeType(audioPathResolved, "audio/mpeg");
         var response = voyagerMateService.interpretAudio(new AudioChatRequest(prompt, base64, mimeType));
         return formatChatResponse(response);
     }
@@ -182,6 +184,13 @@ public class VoyagerMateCommands {
         return Arrays.stream(commaSeparated.split("\\s*,\\s*"))
                 .filter(segment -> !segment.isBlank())
                 .toList();
+    }
+
+    private Path resolvePath(String value) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("File path must not be blank");
+        }
+        return Path.of(value).toAbsolutePath().normalize();
     }
 
     private String toJson(Object value) {

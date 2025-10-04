@@ -15,12 +15,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
+import org.springframework.ai.azure.openai.AzureOpenAiAudioTranscriptionModel;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.ChatClientResponse;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.content.Media;
 import org.springframework.ai.converter.BeanOutputConverter;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.stereotype.Service;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
@@ -33,10 +35,14 @@ public class VoyagerMateService {
 
     private final ChatClient chatClient;
     private final VoyagerTools voyagerTools;
+    private final AzureOpenAiAudioTranscriptionModel audioTranscriptionModel;
 
-    public VoyagerMateService(ChatClient chatClient, VoyagerTools voyagerTools) {
+    public VoyagerMateService(ChatClient chatClient,
+                              VoyagerTools voyagerTools,
+                              AzureOpenAiAudioTranscriptionModel audioTranscriptionModel) {
         this.chatClient = chatClient;
         this.voyagerTools = voyagerTools;
+        this.audioTranscriptionModel = audioTranscriptionModel;
     }
 
     public ChatResponsePayload chat(TextChatRequest request) {
@@ -67,17 +73,26 @@ public class VoyagerMateService {
     }
 
     public ChatResponsePayload interpretAudio(AudioChatRequest request) {
-        var media = Media.builder()
-                .mimeType(resolveMime(request.mimeType(), MimeTypeUtils.parseMimeType("audio/mpeg")))
-                .data(decode(request.audioBase64()))
-                .build();
-        var userMessage = UserMessage.builder()
-                .text(request.prompt())
-                .media(media)
-                .build();
+        var mimeType = resolveMime(request.mimeType(), MimeTypeUtils.parseMimeType("audio/mpeg"));
+        var audioBytes = decode(request.audioBase64());
+
+        var resource = new ByteArrayResource(audioBytes) {
+            @Override
+            public String getFilename() {
+                return "traveller-note." + fileExtensionFor(mimeType);
+            }
+        };
+
+        var transcript = audioTranscriptionModel.call(resource);
+        var prompt = StringUtils.hasText(request.prompt())
+                ? request.prompt()
+                : "Summarise the traveller's note and propose next booking actions.";
+
+        var composedPrompt = prompt + "\n\nTranscript:\n" + transcript;
+
         return executePrompt(() -> chatClient.prompt()
-                .messages(userMessage)
-                .system("Transcribe the traveller's note, clarify uncertainties, then suggest next booking actions.")
+                .system("You are VoyagerMate. Use the provided transcript to clarify uncertainties then suggest actionable next steps.")
+                .user(composedPrompt)
                 .call());
     }
 
@@ -137,11 +152,17 @@ public class VoyagerMateService {
         var started = Instant.now();
         var spec = supplier.get();
         var latency = Duration.between(started, Instant.now()).toMillis();
-        var chatResponse = spec.chatResponse();
-        assert chatResponse != null;
-        var metadata = chatResponse.getMetadata();
-        var model = metadata.getModel() != null ? metadata.getModel() : "azure-openai";
-        return new ChatResponsePayload(spec.content(), model, latency);
+        var response = spec.chatClientResponse();
+        if (response == null) {
+            return new ChatResponsePayload("", "azure-openai", latency);
+        }
+
+        var chatResponse = response.chatResponse();
+        var reply = chatResponse != null ? extractContent(chatResponse) : "";
+        var metadata = chatResponse != null ? chatResponse.getMetadata() : null;
+        var model = (metadata != null && metadata.getModel() != null) ? metadata.getModel() : "azure-openai";
+
+        return new ChatResponsePayload(reply, model, latency);
     }
 
     private ChatResponsePayload buildStreamPayload(List<ChatClientResponse> responses, AtomicLong latencyRef, Instant started) {
@@ -198,6 +219,20 @@ public class VoyagerMateService {
 
     private byte[] decode(String base64) {
         return Base64.getDecoder().decode(base64);
+    }
+
+    private String fileExtensionFor(MimeType mimeType) {
+        if (mimeType == null) {
+            return "bin";
+        }
+        var subtype = mimeType.getSubtype();
+        return switch (subtype) {
+            case "mpeg", "mp3" -> "mp3";
+            case "mp4", "x-m4a" -> "m4a";
+            case "wav", "x-wav" -> "wav";
+            case "ogg", "opus" -> "ogg";
+            default -> subtype;
+        };
     }
 
     private String defaultValue(String value, String fallback) {

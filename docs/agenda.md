@@ -13,7 +13,7 @@
 1. Welcome & objectives (15 min)
 2. ChatClient overview + VoyagerMate intro (40 min)
 3. Text chat command demo + Lab (30 min)
-4. Image + audio shell commands (60 min)
+4. Image shell commands + optional audio note demo (60 min)
 5. Structured itinerary generation (`plan-itinerary`) (45 min)
 6. Tool calling mini-lab (35 min)
 7. Recap & Session 2 preview (15 min)
@@ -23,17 +23,17 @@
 2. Itinerary workflow walkthrough (`workflow` command) (45 min)
 3. Workflow enhancement lab (45 min)
 4. Agent behaviour & tool orchestration (`plan-itinerary`) (45 min)
-5. Concierge capstone using chat/image/audio commands (60 min)
+5. Concierge capstone using chat/image commands (audio optional) (60 min)
 6. Closing discussion & roadmap to Sessions 3–4 (30 min)
 
 ## Materials Checklist
 - Slides covering multimodal prompts, structured outputs, workflows, and roadmap.
-- Sample assets (images + audio) for live demonstrations.
+- Sample assets (images and, if available, audio clips) for live demonstrations.
 - Cheat sheet of Spring Shell commands and flags for attendees.
 - Whiteboard template for mapping workflow steps.
 
 ## Success Criteria
-- Participants can call Azure OpenAI via Spring AI for text, image, and audio prompts using Spring Shell.
+- Participants can call Azure OpenAI via Spring AI for text and image prompts using Spring Shell; audio transcription is covered when a dedicated deployment is available.
 - Teams can build structured itineraries with tool-augmented data.
 - Attendees understand sequencing workflows vs empowering agents.
 - Clear runway is set for data integration and evaluation sessions.

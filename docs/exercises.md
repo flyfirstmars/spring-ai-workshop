@@ -8,7 +8,7 @@ Use these exercises during the first two sessions to reinforce VoyagerMate conce
    - Expose latency metrics via Micrometer and log the response metadata for shell output.
 2. **Multimodal Mastery**
    - Update `describe-image` to accept multiple files and compare suggestions side-by-side.
-   - Enhance `transcribe-audio` to auto-detect WAV or MP3 MIME types without flags.
+   - Enhance `transcribe-audio` to auto-detect WAV or MP3 MIME types without flags *(requires transcription deployment)*.
 3. **Structured Output Builder**
    - Introduce a `visaNotes` field in `ItineraryPlan` populated from a new `@Tool`.
    - Validate in unit tests that the LLM fills every day in the itinerary before printing to the shell.
@@ -26,6 +26,6 @@ Use these exercises during the first two sessions to reinforce VoyagerMate conce
 3. **Budget Intelligence**
    - Expand `VoyagerTools.estimateBudget` to account for traveller count and hotel class.
    - Surface a cost breakdown in `plan-itinerary` and format currency per locale.
-4. **Voice Concierge**
+4. **Voice Concierge** *(optional — transcription deployment required)*
    - Build a scheduled job that polls recorded audio notes, calls `transcribe-audio`, and stores summaries.
    - Notify participants when transcription confidence is low and a manual follow-up is recommended.

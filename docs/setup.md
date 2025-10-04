@@ -3,13 +3,15 @@
 Follow these steps before delivering the VoyagerMate workshop to ensure a smooth experience for attendees.
 
 ## 1. Azure OpenAI
-- Provision an Azure OpenAI resource in a region that supports GPT-5 and GPT-4 deployments.
-- Create deployments for `gpt-5`, `gpt-5-mini`, or `gpt-5-nano` depending on quota.
+- Provision an Azure OpenAI resource in a region that supports GPT-4o or GPT-4 deployments.
+- Create a deployment for `gpt-4o` or `gpt-4o-mini` depending on quota.
+- (Optional) add a Whisper/GPT-4o Transcribe deployment if you intend to run the audio exercise.
 - Provide the endpoint URL and API key, then share the expected environment variables:
   ```bash
   export AZURE_OPENAI_ENDPOINT="https://<resource-name>.openai.azure.com"
-  export AZURE_OPENAI_KEY="<api-key>"
-  export AZURE_OPENAI_DEPLOYMENT="gpt-5-mini"
+  export AZURE_OPENAI_API_KEY="<api-key>"
+  export AZURE_OPENAI_CHAT_DEPLOYMENT="gpt-4o-mini"
+  export AZURE_OPENAI_TRANSCRIPTION_DEPLOYMENT="whisper-1"   # optional
   ```
 
 ## 2. Local Tooling
@@ -19,7 +21,7 @@ Follow these steps before delivering the VoyagerMate workshop to ensure a smooth
 
 ## 3. Workshop Assets
 - Prepare a few royalty-free travel photos (JPEG/PNG) for the image interaction demo.
-- Record short MP3/WAV voice notes describing travel goals for the audio exercise.
+- Record short MP3/WAV voice notes describing travel goals for the audio exercise (skip if no transcription deployment is available).
 - Update `VoyagerTools` with destinations relevant to your organisation or region.
 
 ## 4. IDE Setup
