@@ -1,7 +1,7 @@
 # AI Native Product Development using Spring AI
 
 Hands-on material for the "AI Native Product Development using SpringAI" workshop. The project demonstrates how to
-integrate Spring AI 1.0.2 with Azure OpenAI (GPT-4o family) using Java 25 and Spring Boot 3.5. **VoyagerMate**, a
+integrate Spring AI 1.0.3 with Azure OpenAI (GPT-4o family) using Java 25 and Spring Boot 3.5. **VoyagerMate**, a
 multimodal travel copilot delivered through Spring Shell commands, serves as the reference example throughout the
 material.
 
