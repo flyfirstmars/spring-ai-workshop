@@ -35,6 +35,8 @@ The common interaction model is an HTTPS `POST` with JSON payload and bearer aut
 }
 ```
 
+You can ask the service to retain Responses API outputs by setting `"store": true`; the API returns a persistent `response_id` that you can pass later via `previous_response_id` to achieve stateful follow-ups without resending the original input. Pair this with `metadata` for your own bookkeeping when retrieving stored responses through the SDK.
+
 Always include authentication headers (`Authorization: Bearer <key>` for OpenAI, `api-key: <key>` for Azure), set `Content-Type: application/json`, and target the deployment-specific API version.
 
 The Responses API adds reasoning controls unique to GPT-5-class deployments. `reasoning.effort` ranges from `minimal` to `high` (higher values allocate more reasoning tokens), and models that expose `reasoning.summary` can return concise or detailed traces when desired. `text.verbosity` lets you request terse, medium, or expansive answers without rewriting prompts.
@@ -131,6 +133,8 @@ Tokens are subword units; rough rule of thumb is 1 token ~ 4 characters of Engli
 - **Reasoning tokens**: internal thinking budget for GPT-5 and o-series when you raise `reasoning.effort`.
 
 Tokenization varies with spacing and casing: `" red"`, `" Red"`, and `"Red"` are distinct tokens. The sentence `"You miss 100% of the shots you don't take"` becomes 11 tokens. Non-English and technical jargon typically consume more tokens per character than conversational English.
+
+Every vendor-and even individual models within a vendor-family-use their own tokenizer definitions, so counts are not portable. Rely on the official tooling (OpenAI `tiktoken`, Azure/OpenAI client SDK helpers, Anthropic `count_tokens` endpoints, etc.) to estimate prompts ahead of time, and verify the server's authoritative numbers by reading the `usage` object in each API response (`prompt_tokens`, `completion_tokens`, `reasoning_tokens`, cached token counts, and so on) as documented by the provider.
 
 Usage responses expose the breakdown so you can audit costs and reasoning budgets:
 
