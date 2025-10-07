@@ -1,7 +1,7 @@
 # AI Native Product Development using Spring AI
 
 Hands-on material for the "AI Native Product Development using SpringAI" workshop. The project demonstrates how to
-integrate Spring AI 1.0.3 with Azure OpenAI (GPT-4o family) using Java 25 and Spring Boot 3.5. **VoyagerMate**, a
+integrate Spring AI 1.0.3 with Azure OpenAI (GPT-4o family) using Java 25 and Spring Boot 3.5. VoyagerMate, a
 multimodal travel copilot delivered through Spring Shell commands, serves as the reference example throughout the
 material.
 
@@ -10,15 +10,14 @@ material.
 - Spring Shell commands showcasing text and image interactions with Azure OpenAI via `ChatClient`
 - Structured itinerary generation using Spring AI output converters and travel-focused tool calls
 - Workflow orchestration patterns for agent-like trip planning
-- **Documentation Overview**
-    - **[Session 01 Guide](docs/session-01.md)** – LLM fundamentals, prompt engineering, ChatClient usage, multimodal
-      flow, structured outputs, and tooling patterns.
-    - **[Session 02 Guide](docs/session-02.md)** – Workflow vs agent design, orchestration patterns, context
-      engineering, memory, and optimisation strategies.
-    - **[Setup Guide](docs/setup.md)** – Environment prerequisites, deployments, and prep checklist.
-    - **[Technical Reference](docs/technical-reference.md)** – Exception handling, tool visibility, modern Java
-      techniques.
-    - **[Exploration Exercises](docs/exercises.md)** – Codebase map and open-ended prompts for extending VoyagerMate.
+- Documentation overview:
+    - [Session 01 Guide](docs/session-01.md): LLM fundamentals, prompt engineering, ChatClient usage, multimodal flow,
+      structured outputs, and tooling patterns.
+    - [Session 02 Guide](docs/session-02.md): Workflow vs agent design, orchestration patterns, context engineering,
+      memory, and optimisation strategies.
+    - [Setup Guide](docs/setup.md): Environment prerequisites, deployments, and prep checklist.
+    - [Technical Reference](docs/technical-reference.md): Exception handling, tool visibility, modern Java techniques.
+    - [Exploration Exercises](docs/exercises.md): Codebase map and open-ended prompts for extending VoyagerMate.
 
 ## Prerequisites
 
@@ -68,18 +67,18 @@ shell:>workflow \
 
 ### Workshop Sessions
 
-- **[Session 01: Augmented LLM Foundations](docs/session-01.md)** – Theory primer covering LLM fundamentals, prompt
+- [Session 01: Augmented LLM Foundations](docs/session-01.md): Theory primer covering LLM fundamentals, prompt
   engineering, ChatClient usage, multimodal flow, structured outputs, and tooling patterns for VoyagerMate.
-- **[Session 02: Agents & Workflows](docs/session-02.md)** – Agent-centric design guide mapping Anthropic principles to
-  Spring AI: workflow patterns, agent loops, context engineering, memory, and optimisation strategies.
+- [Session 02: Agents & Workflows](docs/session-02.md): Agent-centric design guide mapping Anthropic principles to
+  Spring AI, covering workflow patterns, agent loops, context engineering, memory, and optimisation strategies.
 
 ### Reference Materials
 
-- **Session 01 Appendix** – See `docs/session-01.md#appendix-quick-reference--configuration` for condensed API and
+- Session 01 appendix: see `docs/session-01.md#appendix-quick-reference--configuration` for condensed API and
   configuration snippets
-- **[Technical Reference](docs/technical-reference.md)** - Exception handling, tool visibility, modern Java features
-- **[Setup Guide](docs/setup.md)** - Environment prerequisites and prep checklist
-- **[Exploration Exercises](docs/exercises.md)** - Codebase map and exploratory prompts for extending VoyagerMate
+- [Technical Reference](docs/technical-reference.md): Exception handling, tool visibility, modern Java features
+- [Setup Guide](docs/setup.md): Environment prerequisites and prep checklist
+- [Exploration Exercises](docs/exercises.md): Codebase map and exploratory prompts for extending VoyagerMate
 
 ## Tool Call Visibility Feature
 
@@ -100,13 +99,13 @@ Latency: 2340 ms
 
 ### Available Tools
 
-- **find_attractions**: Returns must-see experiences for destinations (Rome, Tokyo, Barcelona)
-- **estimate_budget**: Calculates base budget per traveller for trips
-- **travel_gap_checker**: Suggests buffer days between travel legs
+- find_attractions: returns must-see experiences for destinations (Rome, Tokyo, Barcelona)
+- estimate_budget: calculates base budget per traveller for trips
+- travel_gap_checker: suggests buffer days between travel legs
 
 ### Examples
 
-**Chat without tools:**
+Chat without tools:
 
 ```bash
 shell:>chat --prompt "Help me plan a weekend escape from Paris in October."
@@ -114,7 +113,7 @@ shell:>chat --prompt "Help me plan a weekend escape from Paris in October."
 
 Output shows: `Model: azure-openai` and `Latency: 711 ms` (no ToolCall line)
 
-**Itinerary planning with tools (debug logs):**
+Itinerary planning with tools (debug logs):
 
 ```bash
 shell:>plan-itinerary -d "Rome" --depart "2024-12-01" --return "2024-12-07" -n "John" -b "balanced" -i "history,food"
@@ -132,7 +131,7 @@ response metadata.*
 
 ## Source layout
 
-- `ge.jar.springaiworkshop.voyagermate` — feature module containing shell commands, core services, workflow, tools, and
+- `ge.jar.springaiworkshop.voyagermate`: feature module containing shell commands, core services, workflow, tools, and
   models.
 - Configuration and bootstrapping remain in `ge.jar.springaiworkshop.config` to emphasise cross-feature infrastructure.
 

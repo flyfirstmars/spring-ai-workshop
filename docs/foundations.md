@@ -16,12 +16,12 @@ modern "context engineering" is really continuous memory management for probabil
 The common interaction model is an HTTPS `POST` with JSON payload and bearer authentication. Two request styles
 dominate:
 
-**Chat Completions** (OpenAI `/v1/chat/completions`, Azure `/openai/deployments/{deployment}/chat/completions`): you
+Chat Completions (OpenAI `/v1/chat/completions`, Azure `/openai/deployments/{deployment}/chat/completions`): you
 provide a `messages[]` array with alternating roles (`system`, `user`, `assistant`, `tool`). Works with GPT-4o, GPT-5
 variants, multimodal deployments, and tool calling. For reasoning models, use `max_completion_tokens` instead of
 `max_tokens`.
 
-**Responses API** (Azure preview for GPT-5 series, OpenAI for unified reasoning workflows): separates `instructions`
+Responses API (Azure preview for GPT-5 series, OpenAI for unified reasoning workflows): separates `instructions`
 from `input`, adds reasoning controls, and references prior turns by `previous_response_id` rather than resending full
 history. Uses `max_output_tokens` for all models.
 
@@ -147,14 +147,14 @@ Best practices:
 - For large workflows, break problems into sub-agents: a manager delegates to specialized workers operating in fresh
   contexts and aggregates concise reports.
 
-Think of the context window like RAM in a resource-constrained service: load the minimum viable working set, cache what
+Treat the context window as RAM in a resource-constrained service: load the minimum viable working set, cache what
 you'll reuse, and evict aggressively before you thrash the budget.
 
-Remember that context capacity covers both prompt and completion, yet output limits are usually smaller than the maximum
+Context capacity covers both prompt and completion, yet output limits stay smaller than the maximum
 window. GPT-4o caps replies at approximately 16,000 tokens. GPT-5 series models cap output at 32,768 tokens. Plan for
 the API to stop well before hitting the theoretical maximum.
 
-Quality often drops when you approach the ceiling. "Lost-in-the-middle" effects appear once you exceed approximately
+Quality drops when you approach the ceiling. "Lost-in-the-middle" effects appear once you exceed approximately
 50-55% of the context limit, so keep high-signal content near the top and avoid stuffing unless the task truly requires
 it.
 
@@ -182,12 +182,12 @@ agent navigates the information landscape efficiently.
 Tokens are subword units; rough rule of thumb is 1 token ~ 4 characters of English. You pay for:
 
 - Input tokens: everything you send (system prompts, history, tool schemas).
-- Output tokens: generated completion; usually 2-3x the price of input tokens.
+- Output tokens: generated completion, priced at roughly 2-3x the input rate.
 - Cached tokens: reused context, billed at reduced rates when supported.
 - Reasoning tokens: internal thinking budget for GPT-5 and o-series when you raise `reasoning.effort`.
 
 Tokenization varies with spacing and casing: `" red"`, `" Red"`, and `"Red"` are distinct tokens. The sentence
-`"You miss 100% of the shots you don't take"` becomes 11 tokens. Non-English and technical jargon typically consume more
+`"You miss 100% of the shots you don't take"` becomes 11 tokens. Non-English and technical jargon consume more
 tokens per character than conversational English.
 
 Every vendor (and even individual models within a vendor family) use their own tokenizer definitions, so counts are not
@@ -245,7 +245,7 @@ Strategies as conversations grow:
 
 Implement exponential backoff retries for HTTP 429 (rate limits) with doubling delays (1s, 2s, 4s, ...), and watch the
 response headers (`x-ratelimit-remaining-requests`, `x-ratelimit-remaining-tokens`) to understand remaining quota.
-Remember that re-sending long histories inflates both latency and cost, so prune early and often.
+Re-sending long histories inflates both latency and cost, so prune early and frequently.
 
 Because you choose exactly which turns to resend, you can prune, summarise, or augment history on every call: inject
 fresh knowledge, omit stale chatter, or slot in externally retrieved documents just in time.
@@ -254,7 +254,7 @@ Implementation pattern: maintain an array (or list) of message objects locally, 
 every API call, and resend the full array (or sliding subset) with each new request so the stateless service receives
 the intended context.
 
-Rate limiting typically enforces both requests-per-minute (RPM) and tokens-per-minute (TPM) caps; monitor the headers to
+Rate limiting covers both requests-per-minute (RPM) and tokens-per-minute (TPM) caps; monitor the headers to
 anticipate throttling and budget bursts.
 
 At runtime the illusion of memory comes from your client: call one sends just the first user turn, call two resends that
@@ -414,7 +414,7 @@ Modern models (GPT-4o, GPT-5) handle text, images, and audio within the same API
 
 Images: embed in the `content` array with `type: "image_url"` (preferred) or `type: "input_image"` with base64 data.
 `detail` controls processing cost (`"low"` = 85 tokens flat; `"high"` uses 512x512 tiles at 170 tokens each plus base
-85; `"auto"` lets the model decide). Limit is typically 20 MB per image and up to 50 images per request.
+85; `"auto"` lets the model decide). The platform caps images at 20 MB and up to 50 per request.
 
 ```jsonc
 {

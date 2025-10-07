@@ -3,7 +3,8 @@
 Anthropic’s engineering research stresses a key insight for agent builders: effective systems emerge from deliberate
 information architecture, not from single clever prompts.[^3] Context is a finite resource; each token consumes
 attention budget and eventually causes “context rot” if left unmanaged. Within the "AI Native Product Development using
-SpringAI" workshop, this guide maps those principles to Spring AI using VoyagerMate—the travel concierge example—as the
+SpringAI" workshop, this guide maps those principles to Spring AI using VoyagerMate, the travel concierge example, as
+the
 reference implementation.
 
 ---
@@ -70,7 +71,7 @@ Anthropic emphasises a staged approach:[^3]
 
 ## 2. Five Foundational Workflow Patterns
 
-These patterns compose like software design patterns—master each in isolation before combining.
+These patterns compose like software design patterns; master each in isolation before combining.
 
 ### 2.1 Prompt Chaining
 
@@ -138,7 +139,7 @@ surface disagreements.
 ### 2.4 Orchestrator–Workers
 
 An orchestrator LLM decides which subtasks are needed, delegates to worker prompts, and synthesises their outputs.
-Unlike parallelisation, subtasks are not predetermined—they emerge from analysis of the specific request.
+Unlike parallelisation, subtasks are not predetermined. They emerge from analysis of the specific request.
 
 ### 2.5 Evaluator–Optimizer Loop
 
@@ -169,13 +170,13 @@ Apply when iterative refinement measurably improves quality (e.g., nuanced itine
 
 A robust agent loop contains:
 
-1. **Task intake** – the user request and any system context.
-2. **Planning** – optional scratchpad where the agent outlines steps (extended thinking).
-3. **Action selection** – choose a tool or respond directly.
-4. **Execution** – call the selected tool or produce text.
-5. **Result evaluation** – assess tool output, update state, decide next step.
-6. **Human checkpoint** – pause for clarification when needed.
-7. **Termination** – succeed, fail gracefully, or reach safety limits.
+1. Task intake: the user request and any system context.
+2. Planning: optional scratchpad where the agent outlines steps (extended thinking).
+3. Action selection: choose a tool or respond directly.
+4. Execution: call the selected tool or produce text.
+5. Result evaluation: assess tool output, update state, decide the next step.
+6. Human checkpoint: pause for clarification when needed.
+7. Termination: succeed, fail gracefully, or reach safety limits.
 
 Guard rails include iteration caps, execution sandboxes, exception handling, and clearly defined “ask the human”
 triggers.[^3]
@@ -194,11 +195,11 @@ heuristically.[^3]
 
 Treat tools like public APIs:
 
-- Keep responsibilities narrow—avoid overlapping functions.
+- Keep responsibilities narrow and avoid overlapping functions.
 - Use explicit parameter names (`departure_airport_code`, `budget_per_day`).
 - Return paginated, filtered results instead of dumping raw datasets.
 - Provide actionable error messages (“No availability July 14–16; consider shifting dates ±2 days”).
-- Poka‑yoke the interface: design inputs so misuse becomes difficult (e.g., require absolute paths, enforce enum values
+- Poka-yoke the interface: design inputs so misuse becomes difficult (e.g., require absolute paths, enforce enum values
   for cabin class).
 
 Example tool definition:
@@ -234,7 +235,7 @@ active context window, letting the model plan without consuming tokens unnecessa
 ### 5.1 Compaction and Summaries
 
 Monitor token usage. When approaching limits, summarise prior dialogue and clear stale tool outputs. Simple
-optimisation—discarding old tool results—delivered a 29 % performance gain in Anthropic’s internal tests.[^3]
+optimisation, discarding old tool results, delivered a 29 % performance gain in Anthropic’s internal tests.[^3]
 
 ### 5.2 External Memory
 
@@ -268,11 +269,11 @@ Use Spring’s `TaskExecutor` or virtual threads to run sub-agents concurrently,
 
 ## 6. Optimising Context Windows and Cost
 
-- **Prompt caching**: Cache static system prompts to reduce latency and token charges.[^1]
-- **Context editing**: Automate removal of old tool results, maintaining relevance throughout long sessions and reducing
+- Prompt caching: cache static system prompts to reduce latency and token charges.[^1]
+- Context editing: automate removal of old tool results, maintaining relevance throughout long sessions and reducing
   token consumption by up to 84 % in Anthropic’s long-horizon evaluations.[^3]
-- **Token-aware tools**: Enforce pagination and size limits to prevent output floods.[^6]
-- **Cache-aware rate limiting**: Remember that cached prompt reads often bypass rate limits on supported providers.[^1]
+- Token-aware tools: enforce pagination and size limits to prevent output floods.[^6]
+- Cache-aware rate limiting: cached prompt reads bypass rate limits on supported providers.[^1]
 
 ---
 
@@ -320,81 +321,79 @@ Use AOP or filters to monitor token budgets and trigger compaction routines when
 | Refine destination description with style checks     | Evaluator–optimizer                          |
 | Plan vague multi-week vacation                       | Agent loop with memory and human checkpoints |
 
-Start with deterministic implementations; layer in autonomy as evaluation results justify the added complexity and cost.
+Start with deterministic implementations. Layer in autonomy only when evaluation results justify the added complexity
+and cost.
 
 ---
 
 ## 9. Anti-Patterns to Avoid
 
-- **Monolithic system prompts** packed with nested if/else logic or, conversely, vague “be helpful” guidance.[^3]
-- **Bloated tool collections** with overlapping responsibilities or ambiguous naming.
-- **Dumping entire datasets** into context instead of just-in-time retrieval.
-- **Single-context mega agents** for tasks that could be partitioned into specialist sub-agents.
-- **Opaque frameworks** that hide underlying prompts and responses, making debugging impossible—understand what runs
-  under the hood before abstracting.[^3]
+- Monolithic system prompts packed with nested if/else logic or, conversely, vague “be helpful” guidance.[^3]
+- Bloated tool collections with overlapping responsibilities or ambiguous naming.
+- Dumping entire datasets into context instead of just-in-time retrieval.
+- Single-context mega agents for tasks that could be partitioned into specialist sub-agents.
+- Opaque frameworks that hide underlying prompts and responses; understand what runs under the hood before
+  abstracting.[^3]
 
 ---
 
 ## 10. Applying the Principles in VoyagerMate
 
-1. **Begin with workflows** for booking confirmation, budget estimation, and itinerary generation. Measure success
-   before increasing scope.
-2. **Design lean tools** (flight search, hotel search, visa requirements, budget calculation) with robust validation and
+1. Begin with workflows for booking confirmation, budget estimation, and itinerary generation. Measure success before
+   increasing scope.
+2. Design lean tools (flight search, hotel search, visa requirements, budget calculation) with robust validation and
    token-efficient outputs.
-3. **Adopt just-in-time retrieval** for user profiles, past bookings, and hotel metadata via dedicated tools rather than
+3. Adopt just-in-time retrieval for user profiles, past bookings, and hotel metadata via dedicated tools rather than
    bloating prompts.
-4. **Persist critical decisions** to external memory so itineraries survive context resets and cross-session handoffs.
-5. **Introduce parallel research** for multi-city trips using `CompletableFuture` to gather hotels, transport, and
+4. Persist critical decisions to external memory so itineraries survive context resets and cross-session handoffs.
+5. Introduce parallel research for multi-city trips using `CompletableFuture` to gather hotels, transport, and
    activities concurrently.
-6. **Promote to orchestrator–worker** for complex itinerary changes where required subtasks depend on user input.
-7. **Pilot evaluator–optimizer loops** for high-touch content like concierge narratives where quality matters more than
+6. Promote to orchestrator–worker for complex itinerary changes where required subtasks depend on user input.
+7. Pilot evaluator–optimizer loops for high-touch content like concierge narratives where quality matters more than
    latency.
-8. **Evaluate continuously** with scenario-based tests (budget solo travel, accessible family trip, last-minute business
+8. Evaluate continuously with scenario-based tests (budget solo travel, accessible family trip, last-minute business
    itinerary). Track token usage, completion time, and accuracy to guide further optimisation.
 
 ---
 
 ## 11. Performance Optimisation and Evaluation
 
-- **Quantified gains**: Anthropic recorded 29 % improvement from aggressive context editing, 39 % from combining memory
-  tools with context editing, and >90 % from multi-agent orchestration on complex research tasks—use these as benchmarks
-  when introducing similar features in VoyagerMate.[^3]
-- **Token governance**: Build a `TokenBudgetService` that records prompt and completion tokens per conversation,
-  triggers compaction when thresholds are crossed, and reports usage to observability backends. Prompt caching can
-  reduce per-call latency by up to 85 % on frequently reused context.[^1]
-- **Evaluation-first mindset**: Create automated eval suites spanning core user journeys (refund request, multi-city
-  luxury trip, budget backpacking, accessibility-focused itinerary). Measure accuracy, latency, tool usage counts, and
+- Quantified gains: Anthropic recorded 29 % improvement from aggressive context editing, 39 % from combining memory
+  tools with context editing, and >90 % from multi-agent orchestration on complex research tasks. Use these as
+  benchmarks when introducing similar features in VoyagerMate.[^3]
+- Token governance: Build a `TokenBudgetService` that records prompt and completion tokens per conversation, triggers
+  compaction when thresholds are crossed, and reports usage to observability backends. Prompt caching can reduce
+  per-call latency by up to 85 % on frequently reused context.[^1]
+- Evaluation-first mindset: Create automated eval suites spanning core user journeys (refund request, multi-city luxury
+  trip, budget backpacking, accessibility-focused itinerary). Measure accuracy, latency, tool usage counts, and
   fail-fast behaviours before and after each change.
-- **Experiment instrumentation**: Persist agent traces (prompt, response, tool arguments/results, thinking blocks) for
+- Experiment instrumentation: Persist agent traces (prompt, response, tool arguments/results, thinking blocks) for
   offline analysis. Use this data to refine system prompts, tool descriptions, and retrieval strategies.
 
 ---
 
 ## 12. Engineering Practices for Spring AI Agents
 
-- **Concurrency**: Use `@Async`, `CompletableFuture`, or Java virtual threads to parallelise independent LLM calls and
-  tool invocations while keeping threads lightweight.
-- **Resilience**: Wrap external tool calls with Spring Cloud Circuit Breaker to protect against upstream outages;
-  provide graceful fallbacks to the agent when data is unavailable.
-- **Caching & state**: Employ Spring Cache or Redis for frequently accessed metadata (airport lists, popular hotels).
-  Cache system prompts and tool definitions to minimise serialization overhead.
-- **Observability**: Expose Micrometer metrics (latency, token counts, tool error rates) and structured logs capturing
-  agent decisions. Trace multi-agent interactions with correlation IDs so you can reconstruct execution flows.
-- **Testing**: Unit test individual tools, contract test integrations, and run integration tests on orchestration
-  pipelines using Spring Boot Test. Maintain regression evals to ensure new prompts or tools do not degrade prior
-  scenarios.
-- **Framework awareness**: High-level libraries can accelerate development but may obscure raw prompts/responses.
-  Inspect underlying calls regularly so debugging remains tractable.[^3]
+- Concurrency: Use `@Async`, `CompletableFuture`, or Java virtual threads to parallelise independent LLM calls and tool
+  invocations while keeping threads lightweight.
+- Resilience: Wrap external tool calls with Spring Cloud Circuit Breaker to protect against upstream outages; provide
+  graceful fallbacks to the agent when data is unavailable.
+- Caching & state: Employ Spring Cache or Redis for frequently accessed metadata (airport lists, popular hotels). Cache
+  system prompts and tool definitions to minimise serialization overhead.
+- Observability: Expose Micrometer metrics (latency, token counts, tool error rates) and structured logs capturing agent
+  decisions. Trace multi-agent interactions with correlation IDs so you can reconstruct execution flows.
+- Testing: Unit test individual tools, contract test integrations, and run integration tests on orchestration pipelines
+  using Spring Boot Test. Maintain regression evals to ensure new prompts or tools do not degrade prior scenarios.
+- Framework awareness: High-level libraries can accelerate development but may obscure raw prompts/responses. Inspect
+  underlying calls regularly so debugging remains tractable.[^3]
 
 ---
 
 ## 13. Summary
 
-Effective agent systems arise from disciplined context management, clean tool design, and systematic evaluation. Start
-with deterministic workflows, layer in retrieval and structured outputs, and graduate to autonomous agents only when the
-problem truly warrants it. Treat every token as a scarce resource, engineer tools with the same care as public APIs, and
-rely on measurements—not intuition—to decide when to introduce new patterns. With these practices, VoyagerMate can
-evolve from prompt-driven chat to a resilient, multi-modal travel concierge built entirely atop Spring AI.
+Disciplined context management, lean tools, and measurable evaluation underpin effective agent systems. Expand autonomy
+only when evaluations demonstrate the need, keep tokens tightly governed, and treat tool design with the same rigour as
+your public APIs.
 
 ---
 

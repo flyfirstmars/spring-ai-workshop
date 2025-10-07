@@ -1,7 +1,7 @@
 # Technical Reference
 
 This document consolidates technical implementation details, exception handling strategies, and advanced features for
-the "AI Native Product Development using SpringAI" workshop. VoyagerMate—the travel concierge example—provides the
+the "AI Native Product Development using SpringAI" workshop. VoyagerMate, the travel concierge example, provides the
 concrete code references.
 
 ## Table of Contents
@@ -76,7 +76,7 @@ public final class VoyagerMateExceptionHandler {
 
 #### HTTP Status Code Exceptions
 
-**4xx Client Errors:**
+4xx Client Errors:
 
 | Status Code | Exception Type       | Description            | Common Causes                            |
 |-------------|----------------------|------------------------|------------------------------------------|
@@ -87,7 +87,7 @@ public final class VoyagerMateExceptionHandler {
 | 422         | Unprocessable Entity | Semantically incorrect | Content policy violations                |
 | 429         | Rate Limit Error     | Too many requests      | Exceeding requests per minute            |
 
-**5xx Server Errors:**
+5xx Server Errors:
 
 | Status Code | Exception Type        | Description                | Recovery Action                |
 |-------------|-----------------------|----------------------------|--------------------------------|
@@ -126,7 +126,7 @@ org.springframework.web.client.ResourceAccessException  // Network access issues
 
 #### By Operation Type
 
-**Chat Operations:**
+Chat Operations:
 
 ```java
 try{
@@ -146,7 +146,7 @@ RestClientException ex){
         }
 ```
 
-**Audio Transcription:**
+Audio Transcription:
 
 ```java
 try{
@@ -160,7 +160,7 @@ IllegalArgumentException ex){
         }
 ```
 
-**Image Analysis:**
+Image Analysis:
 
 ```java
 try{
@@ -187,7 +187,7 @@ Azure OpenAI includes content safety filters:
         }
 ```
 
-**Detection patterns:**
+Detection patterns:
 
 - Message contains: "content filter", "safety", "policy violation"
 - HTTP 400 with content filter error code
@@ -221,18 +221,18 @@ Map Azure error codes to actionable user messages:
 
 ### Best Practices
 
-1. **Consistent Error Format**
+1. Consistent Error Format
     - Start with concise label (e.g., "Authentication Error")
     - Explain what happened
     - Provide actionable remediation
 
-2. **Proper Logging**
+2. Proper Logging
    ```java
    logger.error("Azure OpenAI API error: {}", ex.getMessage(), ex);
    return "Service Error: Unable to process request\nPlease try again later";
    ```
 
-3. **Exception Hierarchy**
+3. Exception Hierarchy
    ```java
    if (ex instanceof NoSuchFileException) {
        // Handle file not found
@@ -243,7 +243,7 @@ Map Azure error codes to actionable user messages:
    }
    ```
 
-4. **Graceful Degradation**
+4. Graceful Degradation
    ```java
    try {
        return generateFullResponse();
@@ -315,19 +315,19 @@ private String formatChatResponse(ChatResponsePayload payload, boolean includeRe
 
 ### Available Tools
 
-**find_attractions**
+find_attractions
 
 - Purpose: Returns must-see experiences for a destination
 - Parameters: city (String), limit (Integer)
 - Supported Cities: Rome, Tokyo, Barcelona
 
-**estimate_budget**
+estimate_budget
 
 - Purpose: Estimates base budget per traveler
 - Parameters: city (String), nights (int)
 - Daily rates: Rome (185), Tokyo (220), Barcelona (170), Bali (110)
 
-**travel_gap_checker**
+travel_gap_checker
 
 - Purpose: Suggests buffer days between travel legs
 - Parameters: start (LocalDate), end (LocalDate)
@@ -335,14 +335,14 @@ private String formatChatResponse(ChatResponsePayload payload, boolean includeRe
 
 ### Output Examples
 
-**Command without tools:**
+Command without tools:
 
 ```
 Model: azure-openai
 Latency: 711 ms
 ```
 
-**Command with tools:**
+Command with tools:
 
 ```
 Model: azure-openai
@@ -402,7 +402,7 @@ public static String handleException(Exception ex) {
 }
 ```
 
-**Problems:**
+Problems:
 
 - Not type-safe
 - Not exhaustive (no compile-time guarantee)
@@ -425,7 +425,7 @@ public static String handleException(Exception ex) {
 }
 ```
 
-**Benefits:**
+Benefits:
 
 - Type-safe: All error types known at compile time
 - Exhaustive: Compiler enforces handling of all variants
@@ -603,7 +603,7 @@ public static long getRetryDelayMs(VoyagerMateError error) {
 
 ### Best Practices
 
-**1. Keep Sealed Hierarchies Focused**
+1. Keep Sealed Hierarchies Focused
 
 ```java
 // Good: Focused on specific domain
@@ -613,7 +613,7 @@ public sealed interface VoyagerMateError permits NetworkError, AuthError, Valida
 public sealed interface AppState permits LoadingState, ErrorState, UserData, ConfigData
 ```
 
-**2. Use Records for Simple Data**
+2. Use Records for Simple Data
 
 ```java
 // Good: Simple data with behavior
@@ -627,7 +627,7 @@ record NetworkError(String endpoint, String cause) implements VoyagerMateError {
 // Avoid: Complex logic in records (use class instead)
 ```
 
-**3. Leverage Pattern Matching Fully**
+3. Leverage Pattern Matching Fully
 
 ```java
 // Good: Exhaustive pattern matching

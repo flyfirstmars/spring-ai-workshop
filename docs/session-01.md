@@ -1,8 +1,8 @@
 # Augmented LLM Foundations with Spring AI
 
 Spring AI applies familiar Spring patterns to large language models (LLMs), making it practical to build
-production-ready AI services in Java. Within the "AI Native Product Development using SpringAI" workshop, VoyagerMate—a
-travel concierge example—demonstrates how these concepts translate into a domain-specific product.
+production-ready AI services in Java. Within the "AI Native Product Development using SpringAI" workshop, VoyagerMate, a
+travel concierge example, demonstrates how these concepts translate into a domain-specific product.
 
 ---
 
@@ -11,15 +11,15 @@ travel concierge example—demonstrates how these concepts translate into a doma
 ### 1.1 What an LLM Is
 
 An LLM is a pre-trained pattern-matching model that generates text, audio, or structured data by predicting the next
-token in a sequence.[^1] Think of it as a well-read travel expert: it synthesises personalised answers from patterns it
-absorbed during training rather than looking up exact facts.
+token in a sequence.[^1] It synthesises personalised answers from patterns it absorbed during training rather than
+looking up exact facts.
 
 Key characteristics:
 
-- **Not a database** – no built-in lookups for real-time or private data.
-- **Probabilistic** – temperature and sampling parameters influence creativity versus determinism.
-- **Context-aware** – the model only “remembers” the tokens you send in the current request.
-- **Stateless** – nothing persists across calls unless you resend it.
+- Not a database: no built-in lookups for real-time or private data.
+- Probabilistic nature: temperature and sampling parameters influence creativity versus determinism.
+- Context-aware operation: the model only “remembers” the tokens you send in the current request.
+- Stateless interaction: nothing persists across calls unless you resend it.
 
 ### 1.2 Token-by-Token Generation
 
@@ -56,10 +56,10 @@ manual history management.[^1]
 
 Spring AI encodes prompts as structured messages with explicit roles:[^2]
 
-- **System** – global guidance (“You are VoyagerMate, an accessible travel advisor.”)
-- **User** – the traveller’s request.
-- **Assistant** – previous model replies that maintain conversational flow.
-- **Tool** – results returned by external functions.
+- System role: global guidance (“You are VoyagerMate, an accessible travel advisor.”)
+- User role: the traveller’s request.
+- Assistant role: previous model replies that maintain conversational flow.
+- Tool role: results returned by external functions.
 
 ### 2.2 Constructing a Prompt
 
@@ -80,10 +80,10 @@ ChatResponse response = chatModel.call(prompt);
 
 ### 2.3 Four Building Blocks of Effective Prompts
 
-1. **Instructions** – exactly what the model should produce.
-2. **External context** – traveller preferences, budgets, constraints.
-3. **User input** – the direct question or task.
-4. **Output cues** – required structure (tables, JSON schema, markdown sections).
+1. Instructions: exactly what the model should produce.
+2. External context: traveller preferences, budgets, constraints.
+3. User input: the direct question or task.
+4. Output cues: required structure (tables, JSON schema, markdown sections).
 
 Practical tips:
 
@@ -96,10 +96,10 @@ Practical tips:
 
 When you add instructions, examples, tools, and retrieved documents, you are performing context engineering.[^3]
 
-- **Right altitude** – avoid vague goals (“be helpful”) or hyper-specific micromanagement.
-- **Minimal toolset** – only register the functions you expect to use.
-- **Few-shot examples** – offer 2–3 high-quality samples instead of exhaustive lists.
-- **Just-in-time data** – fetch snippets when needed instead of saturating the prompt window.
+- Right altitude: avoid vague goals (“be helpful”) or hyper-specific micromanagement.
+- Minimal toolset: only register the functions you expect to use.
+- Few-shot examples: offer 2–3 high-quality samples instead of exhaustive lists.
+- Just-in-time data: fetch snippets when needed instead of saturating the prompt window.
 
 ---
 
@@ -325,7 +325,7 @@ align with your product experience.[^4]
 
 ### 6.1 Why Structured Outputs Matter
 
-Prompting for JSON is unreliable—models often add prose or omit fields. OpenAI’s structured output mode constrains
+Prompting for JSON is unreliable because models add prose or omit fields. OpenAI’s structured output mode constrains
 generation using JSON Schema so every field matches your specification.[^5]
 
 ```java
@@ -420,27 +420,28 @@ arguments. Spring AI logs tool invocations when `logging.level.org.springframewo
 ### 7.3 Tool Context and Direct Returns
 
 Use `ToolContext` to pass hidden operational data (tenant IDs, request IDs) that should not live in the model prompt.
-Set `returnDirect = true` when the tool output should bypass the model—for example, returning a generated PDF itinerary
+Set `returnDirect = true` when the tool output should bypass the model, for example returning a generated PDF itinerary
 or RAG search snippet directly to the caller.[^6]
 
 ---
 
 ## 8. Bringing Data to the Model
 
-Spring AI supports three complementary strategies:
+Spring AI supports three complementary strategies.
 
-1. **Fine-tuning** – retrain the model with domain-specific data. Expensive and rarely necessary for itinerary planning
-   but powerful for niche terminology.[^6]
-2. **Retrieval-Augmented Generation (RAG)** – embed documents, store them in a vector database, and inject the top
-   semantic matches into the prompt. This “prompt stuffing” approach keeps prompts concise while grounding answers in
-   current knowledge.[^1]
-    - Extract → split into coherent chunks → embed → store.
-    - At query time, retrieve via vector similarity → compose augmented prompt → call the model.
-3. **Tool calling** – access external APIs (weather, flights, loyalty data) and take actions (bookings, notifications)
-   in real time.
+**Fine-tuning.** Retrains the model with domain-specific data. It is expensive and rarely necessary for itinerary
+planning but helps with niche terminology.[^6]
 
-VoyagerMate typically combines all three: model priors for general travel knowledge, RAG for curated guides, and tools
-for live data.
+**Retrieval-Augmented Generation (RAG).** Embeds documents, stores them in a vector database, and injects the top
+semantic matches into the prompt. This approach keeps prompts concise while grounding answers in current knowledge.[^1]
+Extract content, split it into coherent chunks, embed, then store the vectors. At query time, retrieve via similarity,
+compose the augmented prompt, and call the model.
+
+**Tool calling.** Accesses external APIs (weather, flights, loyalty data) and takes actions such as bookings or
+notifications in real time.
+
+VoyagerMate combines all three: model priors for general travel knowledge, RAG for curated guides, and tools for
+live data.
 
 ---
 
@@ -539,7 +540,7 @@ ChatClient itineraryGenerator(ChatClient.Builder builder,
 }
 ```
 
-With these ingredients—well-structured prompts, typed outputs, tool integration, and advisors—you can deliver reliable,
+These ingredients (well-structured prompts, typed outputs, tool integration, and advisors) let you deliver reliable,
 multimodal travel experiences in a pure-Java stack.
 
 ---
