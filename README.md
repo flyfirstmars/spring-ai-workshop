@@ -11,7 +11,6 @@ material.
 - Structured itinerary generation using Spring AI output converters and travel-focused tool calls
 - Workflow orchestration patterns for agent-like trip planning
 - Documentation overview:
-    - [Foundations Notebook](docs/foundations.ipynb): End-to-end LLM foundations walkthrough with runnable HTTP examples.
     - [Session 01 Guide](docs/session-01.md): LLM fundamentals, prompt engineering, ChatClient usage, multimodal flow,
       structured outputs, and tooling patterns.
     - [Session 02 Guide](docs/session-02.md): Workflow vs agent design, orchestration patterns, context engineering,
