@@ -27,10 +27,12 @@
         <url/>
     </scm>
     <properties>
-        <java.version>25</java.version>
+        <java.version>21</java.version>
         <spring-ai.version>1.0.3</spring-ai.version>
         <spring-shell.version>3.4.1</spring-shell.version>
         <netty.version>4.1.127.Final</netty.version>
+        <kotlin.version>1.9.20</kotlin.version>
+        <kotlinx-serialization.version>1.6.0</kotlinx-serialization.version>
     </properties>
     <dependencies>
 
