@@ -75,6 +75,8 @@ These patterns compose like software design patterns; master each in isolation b
 
 ### 2.1 Prompt Chaining
 
+VoyagerMate’s `ItineraryWorkflowService` (shell command `workflow`) chains discovery → storyline → risk review → next steps. Each `runStep` call shares the same base context, making it easy to insert validation or retries between phases.
+
 Break a task into sequential calls where each step validates the previous output.
 
 ```java
@@ -96,6 +98,8 @@ DetailedItinerary itinerary = writer.create(outline);
 Use when tasks naturally decompose and intermediate checks improve reliability.
 
 ### 2.2 Routing
+
+`VoyagerRoutingWorkflowService` (shell command `route-intent`) classifies free-form prompts into `CONCIERGE`, `BOOKING_CHANGE`, or `TRAVEL_RISK` intents using a `BeanOutputConverter`, then applies intent-specific system prompts for the hand-off.
 
 Classify input, then hand off to specialised handlers or model configurations.
 
@@ -121,6 +125,8 @@ Ideal when different categories benefit from tailored prompts, tools, or cost pr
 
 ### 2.3 Parallelisation
 
+`ParallelItineraryWorkflowService` (shell command `parallel-insights`) fans out four research tracks (lodging, dining, logistics, cultural immersion) on virtual threads and records aggregate latency on the DTO for easy benchmarking.
+
 Run independent prompts concurrently and aggregate results programmatically.
 
 ```java
@@ -136,12 +142,16 @@ join());
 Sectioning focuses each prompt on a single concern; voting repeats the same task multiple times to build consensus or
 surface disagreements.
 
-### 2.4 Orchestrator–Workers
+### 2.4 Orchestrator-Workers
+
+`OrchestratorWorkersWorkflowService` (shell command `orchestrator-workers`) plans JSON worker tasks, executes them concurrently on virtual threads, and synthesises the findings back into an action plan, keeping planner/executor/synthesis roles testable.
 
 An orchestrator LLM decides which subtasks are needed, delegates to worker prompts, and synthesises their outputs.
 Unlike parallelisation, subtasks are not predetermined. They emerge from analysis of the specific request.
 
-### 2.5 Evaluator–Optimizer Loop
+### 2.5 Evaluator-Optimizer Loop
+
+`ItineraryRefinementWorkflowService` (shell command `refine-itinerary`) alternates between a copywriter generator and an editorial reviewer returning JSON (`accepted` plus notes). Reviewer notes feed into subsequent drafts until the evaluator approves or the iteration cap triggers.
 
 One LLM generates output; another critiques it. Repeat until quality thresholds are met or maximum iterations are
 reached.
@@ -188,7 +198,7 @@ triggers.[^3]
 ### 4.1 System Prompts at the Right Altitude
 
 Craft system messages that communicate principles without brittle rule lists. Structure with sections like `<role>`,
-`<guidelines>`, `<examples>`. Provide 3–5 canonical examples covering diverse trip types so the model learns
+`<guidelines>`, `<examples>`. Provide 3-5 canonical examples covering diverse trip types so the model learns
 heuristically.[^3]
 
 ### 4.2 Tool Design as Interface Design
@@ -198,7 +208,7 @@ Treat tools like public APIs:
 - Keep responsibilities narrow and avoid overlapping functions.
 - Use explicit parameter names (`departure_airport_code`, `budget_per_day`).
 - Return paginated, filtered results instead of dumping raw datasets.
-- Provide actionable error messages (“No availability July 14–16; consider shifting dates ±2 days”).
+- Provide actionable error messages (“No availability July 14-16; consider shifting dates ±2 days”).
 - Poka-yoke the interface: design inputs so misuse becomes difficult (e.g., require absolute paths, enforce enum values
   for cabin class).
 
@@ -317,8 +327,8 @@ Use AOP or filters to monitor token budgets and trigger compaction routines when
 | Validate booking request end-to-end                  | Prompt chaining workflow                     |
 | Route booking vs refund vs concierge queries         | Routing with specialised prompts             |
 | Research multiple cities simultaneously              | Parallelisation                              |
-| Update complex itinerary where required changes vary | Orchestrator–worker                          |
-| Refine destination description with style checks     | Evaluator–optimizer                          |
+| Update complex itinerary where required changes vary | Orchestrator-worker                          |
+| Refine destination description with style checks     | Evaluator-optimizer                          |
 | Plan vague multi-week vacation                       | Agent loop with memory and human checkpoints |
 
 Start with deterministic implementations. Layer in autonomy only when evaluation results justify the added complexity
@@ -348,8 +358,8 @@ and cost.
 4. Persist critical decisions to external memory so itineraries survive context resets and cross-session handoffs.
 5. Introduce parallel research for multi-city trips using `CompletableFuture` to gather hotels, transport, and
    activities concurrently.
-6. Promote to orchestrator–worker for complex itinerary changes where required subtasks depend on user input.
-7. Pilot evaluator–optimizer loops for high-touch content like concierge narratives where quality matters more than
+6. Promote to orchestrator-worker for complex itinerary changes where required subtasks depend on user input.
+7. Pilot evaluator-optimizer loops for high-touch content like concierge narratives where quality matters more than
    latency.
 8. Evaluate continuously with scenario-based tests (budget solo travel, accessible family trip, last-minute business
    itinerary). Track token usage, completion time, and accuracy to guide further optimisation.
@@ -399,7 +409,7 @@ your public APIs.
 
 ## References
 
-[^1]: Spring AI ChatClient and Advisors – https://docs.spring.io/spring-ai/reference/api/chatclient.html
+[^1]: Spring AI ChatClient and Advisors - https://docs.spring.io/spring-ai/reference/api/chatclient.html
 [^3]: Anthropic, *Effective Context Engineering for AI
-Agents* – https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
-[^6]: Spring AI Tools API – https://docs.spring.io/spring-ai/reference/api/tools.html
+Agents* - https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
+[^6]: Spring AI Tools API - https://docs.spring.io/spring-ai/reference/api/tools.html

@@ -47,7 +47,7 @@ tools/models so you know exactly which layer you are modifying.
   that feed into richer summaries.
 - Design an orchestrator/worker experiment inspired by the agent blueprint in `docs/session-02.md`. Decide which
   subtasks deserve dedicated workers, how they should exchange information, and when to hand control back to a human.
-- Prototype evaluator–optimizer loops for content you want to polish (e.g., narrated itineraries). Capture metrics so
+- Prototype evaluator-optimizer loops for content you want to polish (e.g., narrated itineraries). Capture metrics so
   you can judge whether the quality gain outweighs additional latency/cost.
 
 ## Observability, Cost, and Safety

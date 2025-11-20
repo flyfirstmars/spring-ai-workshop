@@ -8,10 +8,18 @@ import ge.jar.springaiworkshop.voyagermate.model.AudioChatRequest;
 import ge.jar.springaiworkshop.voyagermate.model.ChatResponsePayload;
 import ge.jar.springaiworkshop.voyagermate.model.ImageChatRequest;
 import ge.jar.springaiworkshop.voyagermate.model.ItineraryPlan;
+import ge.jar.springaiworkshop.voyagermate.model.ParallelWorkflowSummary;
+import ge.jar.springaiworkshop.voyagermate.model.RefinementResult;
+import ge.jar.springaiworkshop.voyagermate.model.RoutingWorkflowResult;
 import ge.jar.springaiworkshop.voyagermate.model.TextChatRequest;
 import ge.jar.springaiworkshop.voyagermate.model.TripPlanRequest;
 import ge.jar.springaiworkshop.voyagermate.model.TripWorkflowSummary;
+import ge.jar.springaiworkshop.voyagermate.model.WorkerWorkflowSummary;
+import ge.jar.springaiworkshop.voyagermate.workflow.ItineraryRefinementWorkflowService;
 import ge.jar.springaiworkshop.voyagermate.workflow.ItineraryWorkflowService;
+import ge.jar.springaiworkshop.voyagermate.workflow.OrchestratorWorkersWorkflowService;
+import ge.jar.springaiworkshop.voyagermate.workflow.ParallelItineraryWorkflowService;
+import ge.jar.springaiworkshop.voyagermate.workflow.VoyagerRoutingWorkflowService;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -29,13 +37,25 @@ public class VoyagerMateCommands {
 
     private final VoyagerMateService voyagerMateService;
     private final ItineraryWorkflowService itineraryWorkflowService;
+    private final ParallelItineraryWorkflowService parallelItineraryWorkflowService;
+    private final VoyagerRoutingWorkflowService voyagerRoutingWorkflowService;
+    private final ItineraryRefinementWorkflowService itineraryRefinementWorkflowService;
+    private final OrchestratorWorkersWorkflowService orchestratorWorkersWorkflowService;
     private final ObjectWriter jsonWriter;
 
     public VoyagerMateCommands(VoyagerMateService voyagerMateService,
                                ItineraryWorkflowService itineraryWorkflowService,
+                               ParallelItineraryWorkflowService parallelItineraryWorkflowService,
+                               VoyagerRoutingWorkflowService voyagerRoutingWorkflowService,
+                               ItineraryRefinementWorkflowService itineraryRefinementWorkflowService,
+                               OrchestratorWorkersWorkflowService orchestratorWorkersWorkflowService,
                                ObjectMapper objectMapper) {
         this.voyagerMateService = voyagerMateService;
         this.itineraryWorkflowService = itineraryWorkflowService;
+        this.parallelItineraryWorkflowService = parallelItineraryWorkflowService;
+        this.voyagerRoutingWorkflowService = voyagerRoutingWorkflowService;
+        this.itineraryRefinementWorkflowService = itineraryRefinementWorkflowService;
+        this.orchestratorWorkersWorkflowService = orchestratorWorkersWorkflowService;
         this.jsonWriter = objectMapper.copy()
                 .findAndRegisterModules()
                 .writerWithDefaultPrettyPrinter();
@@ -120,16 +140,7 @@ public class VoyagerMateCommands {
             @ShellOption(value = {"-i", "--interests"}, defaultValue = ShellOption.NULL, help = "Comma separated traveller interests") String interests
     ) {
         try {
-            var request = new TripPlanRequest(
-                    traveller,
-                    origin,
-                    destination,
-                    parseDate(depart),
-                    parseDate(ret),
-                    budget,
-                    parseList(interests)
-            );
-
+            var request = buildTripPlanRequest(traveller, origin, destination, depart, ret, budget, interests);
             ItineraryPlan plan = voyagerMateService.planTrip(request);
             return toJson(plan);
         } catch (Exception ex) {
@@ -147,17 +158,71 @@ public class VoyagerMateCommands {
             @ShellOption(value = {"-b", "--budget"}, defaultValue = ShellOption.NULL, help = "Budget focus") String budget,
             @ShellOption(value = {"-i", "--interests"}, defaultValue = ShellOption.NULL, help = "Comma separated traveller interests") String interests
     ) {
-        var request = new TripPlanRequest(
-                traveller,
-                origin,
-                destination,
-                parseDate(depart),
-                parseDate(ret),
-                budget,
-                parseList(interests)
-        );
-
+        var request = buildTripPlanRequest(traveller, origin, destination, depart, ret, budget, interests);
         TripWorkflowSummary summary = itineraryWorkflowService.orchestrate(request);
+        return toJson(summary);
+    }
+
+    @ShellMethod(key = "parallel-insights", value = "Run VoyagerMate's parallel research workflow.")
+    public String runParallelWorkflow(
+            @ShellOption(value = {"-n", "--name"}, defaultValue = ShellOption.NULL, help = "Traveller name") String traveller,
+            @ShellOption(value = {"-o", "--origin"}, defaultValue = ShellOption.NULL, help = "Origin city") String origin,
+            @ShellOption(value = {"-d", "--destination"}, help = "Destination city") String destination,
+            @ShellOption(value = {"--depart"}, defaultValue = ShellOption.NULL, help = "Departure date (YYYY-MM-DD)") String depart,
+            @ShellOption(value = {"--return"}, defaultValue = ShellOption.NULL, help = "Return date (YYYY-MM-DD)") String ret,
+            @ShellOption(value = {"-b", "--budget"}, defaultValue = ShellOption.NULL, help = "Budget focus") String budget,
+            @ShellOption(value = {"-i", "--interests"}, defaultValue = ShellOption.NULL, help = "Comma separated traveller interests") String interests
+    ) {
+        var request = buildTripPlanRequest(traveller, origin, destination, depart, ret, budget, interests);
+        ParallelWorkflowSummary summary = parallelItineraryWorkflowService.orchestrate(request);
+        return toJson(summary);
+    }
+
+    @ShellMethod(key = "route-intent", value = "Route a traveller prompt to the best VoyagerMate workflow.")
+    public String routeIntent(
+            @ShellOption(value = {"-p", "--prompt"}, help = "Traveller request to classify") String prompt,
+            @ShellOption(value = {"-n", "--name"}, defaultValue = ShellOption.NULL, help = "Traveller name") String traveller,
+            @ShellOption(value = {"-o", "--origin"}, defaultValue = ShellOption.NULL, help = "Origin city") String origin,
+            @ShellOption(value = {"-d", "--destination"}, defaultValue = ShellOption.NULL, help = "Destination city") String destination,
+            @ShellOption(value = {"--depart"}, defaultValue = ShellOption.NULL, help = "Departure date (YYYY-MM-DD)") String depart,
+            @ShellOption(value = {"--return"}, defaultValue = ShellOption.NULL, help = "Return date (YYYY-MM-DD)") String ret,
+            @ShellOption(value = {"-b", "--budget"}, defaultValue = ShellOption.NULL, help = "Budget focus") String budget,
+            @ShellOption(value = {"-i", "--interests"}, defaultValue = ShellOption.NULL, help = "Comma separated traveller interests") String interests
+    ) {
+        var request = buildTripPlanRequest(traveller, origin, destination, depart, ret, budget, interests);
+        RoutingWorkflowResult result = voyagerRoutingWorkflowService.route(prompt, request);
+        return toJson(result);
+    }
+
+    @ShellMethod(key = "refine-itinerary", value = "Iteratively refine a draft itinerary with evaluator feedback.")
+    public String refineItinerary(
+            @ShellOption(value = {"-p", "--prompt"}, help = "Creative brief or traveller instructions") String prompt,
+            @ShellOption(value = {"-n", "--name"}, defaultValue = ShellOption.NULL, help = "Traveller name") String traveller,
+            @ShellOption(value = {"-o", "--origin"}, defaultValue = ShellOption.NULL, help = "Origin city") String origin,
+            @ShellOption(value = {"-d", "--destination"}, defaultValue = ShellOption.NULL, help = "Destination city") String destination,
+            @ShellOption(value = {"--depart"}, defaultValue = ShellOption.NULL, help = "Departure date (YYYY-MM-DD)") String depart,
+            @ShellOption(value = {"--return"}, defaultValue = ShellOption.NULL, help = "Return date (YYYY-MM-DD)") String ret,
+            @ShellOption(value = {"-b", "--budget"}, defaultValue = ShellOption.NULL, help = "Budget focus") String budget,
+            @ShellOption(value = {"-i", "--interests"}, defaultValue = ShellOption.NULL, help = "Comma separated traveller interests") String interests
+    ) {
+        var request = buildTripPlanRequest(traveller, origin, destination, depart, ret, budget, interests);
+        RefinementResult result = itineraryRefinementWorkflowService.refine(prompt, request);
+        return toJson(result);
+    }
+
+    @ShellMethod(key = "orchestrator-workers", value = "Run the orchestrator-workers agentic workflow.")
+    public String orchestrateWorkers(
+            @ShellOption(value = {"-p", "--prompt"}, help = "High-level traveller brief") String prompt,
+            @ShellOption(value = {"-n", "--name"}, defaultValue = ShellOption.NULL, help = "Traveller name") String traveller,
+            @ShellOption(value = {"-o", "--origin"}, defaultValue = ShellOption.NULL, help = "Origin city") String origin,
+            @ShellOption(value = {"-d", "--destination"}, defaultValue = ShellOption.NULL, help = "Destination city") String destination,
+            @ShellOption(value = {"--depart"}, defaultValue = ShellOption.NULL, help = "Departure date (YYYY-MM-DD)") String depart,
+            @ShellOption(value = {"--return"}, defaultValue = ShellOption.NULL, help = "Return date (YYYY-MM-DD)") String ret,
+            @ShellOption(value = {"-b", "--budget"}, defaultValue = ShellOption.NULL, help = "Budget focus") String budget,
+            @ShellOption(value = {"-i", "--interests"}, defaultValue = ShellOption.NULL, help = "Comma separated traveller interests") String interests
+    ) {
+        var request = buildTripPlanRequest(traveller, origin, destination, depart, ret, budget, interests);
+        WorkerWorkflowSummary summary = orchestratorWorkersWorkflowService.orchestrate(prompt, request);
         return toJson(summary);
     }
 
@@ -205,6 +270,24 @@ public class VoyagerMateCommands {
         } catch (IOException ex) {
             return fallback;
         }
+    }
+
+    private TripPlanRequest buildTripPlanRequest(String traveller,
+                                                 String origin,
+                                                 String destination,
+                                                 String depart,
+                                                 String ret,
+                                                 String budget,
+                                                 String interests) {
+        return new TripPlanRequest(
+                traveller,
+                origin,
+                destination,
+                parseDate(depart),
+                parseDate(ret),
+                budget,
+                parseList(interests)
+        );
     }
 
     private LocalDate parseDate(String value) {

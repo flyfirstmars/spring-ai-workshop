@@ -3,7 +3,11 @@ package ge.jar.springaiworkshop.voyagermate.shell;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import ge.jar.springaiworkshop.voyagermate.core.VoyagerMateService;
+import ge.jar.springaiworkshop.voyagermate.workflow.ItineraryRefinementWorkflowService;
 import ge.jar.springaiworkshop.voyagermate.workflow.ItineraryWorkflowService;
+import ge.jar.springaiworkshop.voyagermate.workflow.OrchestratorWorkersWorkflowService;
+import ge.jar.springaiworkshop.voyagermate.workflow.ParallelItineraryWorkflowService;
+import ge.jar.springaiworkshop.voyagermate.workflow.VoyagerRoutingWorkflowService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -32,6 +36,18 @@ class VoyagerMateCommandsExceptionIntegrationTest {
     private ItineraryWorkflowService itineraryWorkflowService;
 
     @Mock
+    private ParallelItineraryWorkflowService parallelItineraryWorkflowService;
+
+    @Mock
+    private VoyagerRoutingWorkflowService voyagerRoutingWorkflowService;
+
+    @Mock
+    private ItineraryRefinementWorkflowService itineraryRefinementWorkflowService;
+
+    @Mock
+    private OrchestratorWorkersWorkflowService orchestratorWorkersWorkflowService;
+
+    @Mock
     private ObjectMapper objectMapper;
 
     private VoyagerMateCommands voyagerMateCommands;
@@ -43,7 +59,14 @@ class VoyagerMateCommandsExceptionIntegrationTest {
         when(copyMock.findAndRegisterModules()).thenReturn(copyMock);
         when(copyMock.writerWithDefaultPrettyPrinter()).thenReturn(Mockito.mock(ObjectWriter.class));
 
-        voyagerMateCommands = new VoyagerMateCommands(voyagerMateService, itineraryWorkflowService, objectMapper);
+        voyagerMateCommands = new VoyagerMateCommands(
+                voyagerMateService,
+                itineraryWorkflowService,
+                parallelItineraryWorkflowService,
+                voyagerRoutingWorkflowService,
+                itineraryRefinementWorkflowService,
+                orchestratorWorkersWorkflowService,
+                objectMapper);
     }
 
     @Nested

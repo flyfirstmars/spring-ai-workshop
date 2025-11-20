@@ -9,12 +9,15 @@ material.
 
 - Spring Shell commands showcasing text and image interactions with Azure OpenAI via `ChatClient`
 - Structured itinerary generation using Spring AI output converters and travel-focused tool calls
-- Workflow orchestration patterns for agent-like trip planning
+- Workflow orchestration patterns for agent-like trip planning (`workflow`, `parallel-insights`, `route-intent`, `refine-itinerary`, `orchestrator-workers`)
+- **NEW Interactive Kotlin Notebooks** - Learn Spring AI with executable examples:
+    - [Foundations](notebooks/foundations.ipynb): LLM fundamentals, ChatClient, multimodal, structured outputs, tools
 - Documentation overview:
     - [Session 01 Guide](docs/session-01.md): LLM fundamentals, prompt engineering, ChatClient usage, multimodal flow,
       structured outputs, and tooling patterns.
     - [Session 02 Guide](docs/session-02.md): Workflow vs agent design, orchestration patterns, context engineering,
       memory, and optimisation strategies.
+    - [Agentic Workflow Reference](docs/agentic-workflows.md): Mapping Anthropic patterns to VoyagerMate commands.
     - [Setup Guide](docs/setup.md): Environment prerequisites, deployments, and prep checklist.
     - [Technical Reference](docs/technical-reference.md): Exception handling, tool visibility, modern Java techniques.
     - [Exploration Exercises](docs/exercises.md): Codebase map and open-ended prompts for extending VoyagerMate.
@@ -59,13 +62,28 @@ shell:>workflow \
   --name Mira --origin Amsterdam --destination Tokyo \
   --depart 2025-04-10 --return 2025-04-20 \
   --budget balanced --interests food,design
+shell:>parallel-insights --destination Lisbon --depart 2025-05-01 --return 2025-05-06 --interests food,cycling
+shell:>route-intent --prompt "My flight was cancelled, what now?" --destination Toronto
+shell:>refine-itinerary --prompt "Make the Rome plan more poetic" --destination Rome --depart 2025-06-01 --return 2025-06-05
+shell:>orchestrator-workers --prompt "Take a family across Japan for two weeks" --destination Tokyo --depart 2025-07-10 --return 2025-07-24
 ```
 
 *Requires a transcription deployment for audio commands.*
 
 ## Documentation
 
-### Workshop Sessions
+### NEW Interactive Learning (Kotlin Notebooks)
+
+Start here for hands-on learning with executable examples:
+
+1. **[Setup Guide](notebooks/README.ipynb)** - Environment setup, testing, troubleshooting
+2. **[Foundations](notebooks/foundations.ipynb)** - LLM fundamentals, ChatClient, tools, structured outputs
+3. **[Agentic Patterns](notebooks/agentic-patterns.ipynb)** - Workflows, agents, orchestration, optimization
+4. **[Exercises](notebooks/exercises.ipynb)** - Hands-on exploration and feature building
+
+**How to use:** Open notebooks in IntelliJ IDEA (Kotlin Notebook plugin bundled in 2023.3+)
+
+### Workshop Sessions (Markdown)
 
 - [Session 01: Augmented LLM Foundations](docs/session-01.md): Theory primer covering LLM fundamentals, prompt
   engineering, ChatClient usage, multimodal flow, structured outputs, and tooling patterns for VoyagerMate.

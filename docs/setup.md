@@ -19,7 +19,7 @@ running example, but the prep applies to any product you prototype during the se
 ## 2. Local Tooling
 
 - Install Java 25 (Temurin builds recommended) and Maven 3.9+.
-- Optional: install Docker Compose via Rancher Desktop for upcoming Postgres and vector store demos (Sessions 3–4).
+- Optional: install Docker Compose via Rancher Desktop for upcoming Postgres and vector store demos (Sessions 3-4).
 - Verify connectivity: `./mvnw -q -DskipTests spring-boot:run` should start the service.
 
 ## 3. Workshop Assets

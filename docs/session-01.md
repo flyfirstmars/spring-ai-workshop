@@ -98,7 +98,7 @@ When you add instructions, examples, tools, and retrieved documents, you are per
 
 - Right altitude: avoid vague goals (“be helpful”) or hyper-specific micromanagement.
 - Minimal toolset: only register the functions you expect to use.
-- Few-shot examples: offer 2–3 high-quality samples instead of exhaustive lists.
+- Few-shot examples: offer 2-3 high-quality samples instead of exhaustive lists.
 - Just-in-time data: fetch snippets when needed instead of saturating the prompt window.
 
 ---
@@ -368,7 +368,7 @@ VoyagerItinerary itinerary = converter.convert(
         response.getResult().getOutput().getContent());
 ```
 
-Use lower temperatures (0.0–0.3) for deterministic JSON and mark fields `required=true` so the constrained decoder knows
+Use lower temperatures (0.0-0.3) for deterministic JSON and mark fields `required=true` so the constrained decoder knows
 they must be present.
 
 ---
@@ -547,10 +547,10 @@ multimodal travel experiences in a pure-Java stack.
 
 ## References
 
-[^1]: Spring AI ChatClient Reference – https://docs.spring.io/spring-ai/reference/api/chatclient.html
-[^2]: Spring AI Prompt & Message Reference – https://docs.spring.io/spring-ai/reference/api/prompt.html
+[^1]: Spring AI ChatClient Reference - https://docs.spring.io/spring-ai/reference/api/chatclient.html
+[^2]: Spring AI Prompt & Message Reference - https://docs.spring.io/spring-ai/reference/api/prompt.html
 [^3]: Anthropic, *Effective Context Engineering for AI
-Agents* – https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
-[^4]: Spring AI OpenAI Chat (Images & Audio) – https://docs.spring.io/spring-ai/reference/api/chat/openai-chat.html
-[^5]: OpenAI Structured Outputs Guide – https://platform.openai.com/docs/guides/structured-outputs
-[^6]: Spring AI Tools API & Function Calling – https://docs.spring.io/spring-ai/reference/api/tools.html
+Agents* - https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents
+[^4]: Spring AI OpenAI Chat (Images & Audio) - https://docs.spring.io/spring-ai/reference/api/chat/openai-chat.html
+[^5]: OpenAI Structured Outputs Guide - https://platform.openai.com/docs/guides/structured-outputs
+[^6]: Spring AI Tools API & Function Calling - https://docs.spring.io/spring-ai/reference/api/tools.html

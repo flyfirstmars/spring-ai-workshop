@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 import org.springframework.ai.azure.openai.AzureOpenAiAudioTranscriptionModel;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.ChatClientResponse;
+import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.content.Media;
@@ -156,7 +157,7 @@ public class VoyagerMateService {
         var firstTokenLatency = new AtomicLong(-1);
 
         Flux<ChatClientResponse> responses = spec.chatClientResponse()
-                .doOnNext(_ -> firstTokenLatency.compareAndSet(-1,
+                .doOnNext(response -> firstTokenLatency.compareAndSet(-1,
                         Duration.between(started, Instant.now()).toMillis()))
                 .cache();
 
@@ -201,7 +202,7 @@ public class VoyagerMateService {
                 .map(ChatClientResponse::chatResponse)
                 .map(this::extractModel)
                 .filter(StringUtils::hasText)
-                .reduce((_, second) -> second)
+                .reduce((first, second) -> second)
                 .orElse("azure-openai");
 
         var toolCalls = responses.stream()
@@ -246,12 +247,12 @@ public class VoyagerMateService {
         var result = chatResponse.getResult();
         var toolCalls = result.getOutput().getToolCalls();
 
-        if (toolCalls == null || toolCalls.isEmpty()) {
+        if (toolCalls.isEmpty()) {
             return List.of();
         }
 
         return toolCalls.stream()
-                .map(toolCall -> toolCall.name())
+                .map(AssistantMessage.ToolCall::name)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
     }

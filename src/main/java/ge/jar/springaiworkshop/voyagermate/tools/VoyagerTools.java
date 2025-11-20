@@ -78,7 +78,6 @@ public class VoyagerTools {
 
             StringBuilder result = new StringBuilder();
 
-            // Date validation
             if (date.isBefore(today)) {
                 result.append("WARNING: Date ").append(dateString).append(" is in the past. ");
             } else if (date.isEqual(today)) {
@@ -88,22 +87,18 @@ public class VoyagerTools {
                 result.append("Date ").append(dateString).append(" is ").append(daysFromNow).append(" days from now. ");
             }
 
-            // Day of week
             DayOfWeek dayOfWeek = date.getDayOfWeek();
             result.append("It falls on a ").append(dayOfWeek.getDisplayName(TextStyle.FULL, Locale.ENGLISH)).append(". ");
 
-            // Weekend check
             if (dayOfWeek == DayOfWeek.SATURDAY || dayOfWeek == DayOfWeek.SUNDAY) {
                 result.append("This is a weekend day. ");
             } else {
                 result.append("This is a weekday. ");
             }
 
-            // Month and season context
             Month month = date.getMonth();
             result.append("Month: ").append(month.getDisplayName(TextStyle.FULL, Locale.ENGLISH)).append(" (");
 
-            // Season in Northern Hemisphere
             switch (month) {
                 case DECEMBER, JANUARY, FEBRUARY -> result.append("Winter");
                 case MARCH, APRIL, MAY -> result.append("Spring");
@@ -112,7 +107,6 @@ public class VoyagerTools {
             }
             result.append(" in Northern Hemisphere). ");
 
-            // Local time context if timezone provided
             if (timezone != null && !timezone.trim().isEmpty()) {
                 try {
                     ZoneId zoneId = ZoneId.of(timezone);
