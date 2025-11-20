@@ -17,6 +17,7 @@ import ge.jar.springaiworkshop.voyagermate.model.TripWorkflowSummary;
 import ge.jar.springaiworkshop.voyagermate.model.WorkerWorkflowSummary;
 import ge.jar.springaiworkshop.voyagermate.workflow.ItineraryRefinementWorkflowService;
 import ge.jar.springaiworkshop.voyagermate.workflow.ItineraryWorkflowService;
+import ge.jar.springaiworkshop.voyagermate.workflow.MultiAgentOrchestratorService;
 import ge.jar.springaiworkshop.voyagermate.workflow.OrchestratorWorkersWorkflowService;
 import ge.jar.springaiworkshop.voyagermate.workflow.ParallelItineraryWorkflowService;
 import ge.jar.springaiworkshop.voyagermate.workflow.VoyagerRoutingWorkflowService;
@@ -41,6 +42,7 @@ public class VoyagerMateCommands {
     private final VoyagerRoutingWorkflowService voyagerRoutingWorkflowService;
     private final ItineraryRefinementWorkflowService itineraryRefinementWorkflowService;
     private final OrchestratorWorkersWorkflowService orchestratorWorkersWorkflowService;
+    private final MultiAgentOrchestratorService multiAgentOrchestratorService;
     private final ObjectWriter jsonWriter;
 
     public VoyagerMateCommands(VoyagerMateService voyagerMateService,
@@ -49,6 +51,7 @@ public class VoyagerMateCommands {
                                VoyagerRoutingWorkflowService voyagerRoutingWorkflowService,
                                ItineraryRefinementWorkflowService itineraryRefinementWorkflowService,
                                OrchestratorWorkersWorkflowService orchestratorWorkersWorkflowService,
+                               MultiAgentOrchestratorService multiAgentOrchestratorService,
                                ObjectMapper objectMapper) {
         this.voyagerMateService = voyagerMateService;
         this.itineraryWorkflowService = itineraryWorkflowService;
@@ -56,6 +59,7 @@ public class VoyagerMateCommands {
         this.voyagerRoutingWorkflowService = voyagerRoutingWorkflowService;
         this.itineraryRefinementWorkflowService = itineraryRefinementWorkflowService;
         this.orchestratorWorkersWorkflowService = orchestratorWorkersWorkflowService;
+        this.multiAgentOrchestratorService = multiAgentOrchestratorService;
         this.jsonWriter = objectMapper.copy()
                 .findAndRegisterModules()
                 .writerWithDefaultPrettyPrinter();
@@ -224,6 +228,11 @@ public class VoyagerMateCommands {
         var request = buildTripPlanRequest(traveller, origin, destination, depart, ret, budget, interests);
         WorkerWorkflowSummary summary = orchestratorWorkersWorkflowService.orchestrate(prompt, request);
         return toJson(summary);
+    }
+
+    @ShellMethod(key = "multi-agent-plan", value = "Plan a trip using a team of AI agents.")
+    public String multiAgentPlan(@ShellOption(help = "Describe your trip request") String request) {
+        return multiAgentOrchestratorService.planTrip(request);
     }
 
     private String formatChatResponse(ChatResponsePayload payload) {

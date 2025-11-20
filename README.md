@@ -9,7 +9,7 @@ material.
 
 - Spring Shell commands showcasing text and image interactions with Azure OpenAI via `ChatClient`
 - Structured itinerary generation using Spring AI output converters and travel-focused tool calls
-- Workflow orchestration patterns for agent-like trip planning (`workflow`, `parallel-insights`, `route-intent`, `refine-itinerary`, `orchestrator-workers`)
+- Workflow orchestration patterns for agent-like trip planning (`workflow`, `parallel-insights`, `route-intent`, `refine-itinerary`, `orchestrator-workers`, `multi-agent-plan`)
 - **NEW Interactive Kotlin Notebooks** - Learn Spring AI with executable examples:
     - [Foundations](notebooks/foundations.ipynb): LLM fundamentals, ChatClient, multimodal, structured outputs, tools
 - Documentation overview:
@@ -66,6 +66,7 @@ shell:>parallel-insights --destination Lisbon --depart 2025-05-01 --return 2025-
 shell:>route-intent --prompt "My flight was cancelled, what now?" --destination Toronto
 shell:>refine-itinerary --prompt "Make the Rome plan more poetic" --destination Rome --depart 2025-06-01 --return 2025-06-05
 shell:>orchestrator-workers --prompt "Take a family across Japan for two weeks" --destination Tokyo --depart 2025-07-10 --return 2025-07-24
+shell:>multi-agent-plan --request "Plan a 10-day culinary tour of Italy starting in Rome."
 ```
 
 *Requires a transcription deployment for audio commands.*
