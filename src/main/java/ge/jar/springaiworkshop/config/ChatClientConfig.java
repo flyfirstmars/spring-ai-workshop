@@ -18,6 +18,7 @@ public class ChatClientConfig {
                 .defaultOptions(AzureOpenAiChatOptions.builder()
                         .deploymentName(deploymentName)
                         .maxCompletionTokens(1024)
+                        .temperature(1.0)
                         .build())
                 .build();
     }
