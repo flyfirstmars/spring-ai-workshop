@@ -100,8 +100,7 @@ public class VoyagerRoutingWorkflowService {
                     .user(prompt)
                     .call()
                     .content();
-            assert response != null;
-            return converter.convert(response);
+            return converter.convert(Objects.requireNonNull(response, "Response content must not be null"));
         }
     }
 

@@ -2,6 +2,7 @@ package ge.jar.springaiworkshop.voyagermate.workflow;
 
 import ge.jar.springaiworkshop.voyagermate.model.ParallelWorkflowSummary;
 import ge.jar.springaiworkshop.voyagermate.model.TripPlanRequest;
+import jakarta.annotation.PreDestroy;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Objects;
@@ -108,6 +109,11 @@ public class ParallelItineraryWorkflowService {
 
     private String formatDate(java.time.LocalDate date) {
         return date == null ? "unscheduled" : date.toString();
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        VIRTUAL_EXECUTOR.shutdown();
     }
 
     @FunctionalInterface

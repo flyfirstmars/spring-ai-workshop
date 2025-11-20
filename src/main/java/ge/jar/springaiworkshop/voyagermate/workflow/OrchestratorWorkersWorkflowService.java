@@ -3,6 +3,7 @@ package ge.jar.springaiworkshop.voyagermate.workflow;
 import ge.jar.springaiworkshop.voyagermate.model.TripPlanRequest;
 import ge.jar.springaiworkshop.voyagermate.model.WorkerFinding;
 import ge.jar.springaiworkshop.voyagermate.model.WorkerWorkflowSummary;
+import jakarta.annotation.PreDestroy;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
@@ -50,6 +51,11 @@ public class OrchestratorWorkersWorkflowService {
         return new WorkerWorkflowSummary(plan.analysis(), findings, actionPlan);
     }
 
+    @PreDestroy
+    public void shutdown() {
+        WORKER_EXECUTOR.shutdown();
+    }
+
     private List<WorkerFinding> executeWorkers(List<WorkerTask> tasks, String context) {
         var futures = tasks.stream()
                 .map(task -> CompletableFuture.supplyAsync(
@@ -58,7 +64,7 @@ public class OrchestratorWorkersWorkflowService {
         CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).join();
         return futures.stream()
                 .map(CompletableFuture::join)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private String baseContext(TripPlanRequest request) {
@@ -141,8 +147,7 @@ public class OrchestratorWorkersWorkflowService {
                             """.formatted(travellerBrief, context))
                     .call()
                     .content();
-            assert response != null;
-            return converter.convert(response);
+            return converter.convert(Objects.requireNonNull(response, "Response content must not be null"));
         }
     }
 

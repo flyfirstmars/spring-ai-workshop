@@ -139,16 +139,23 @@ public class VoyagerMateService {
     }
 
     private String getString(TripPlanRequest request, String interests) {
-        var dateRange = formatDate(request.departureDate()) + " to " + formatDate(request.returnDate());
-
-        var userPrompt = "Plan a journey based on these preferences:\n" +
-                "Traveller: " + defaultValue(request.travellerName(), "Guest Traveller") + "\n" +
-                "Origin: " + defaultValue(request.originCity(), "Unknown") + "\n" +
-                "Destination: " + defaultValue(request.destinationCity(), "Unknown") + "\n" +
-                "Dates: " + dateRange + "\n" +
-                "Budget level: " + defaultValue(request.budgetFocus(), "flexible") + "\n" +
-                "Interests: " + interests;
-        return userPrompt;
+        return """
+                Plan a journey based on these preferences:
+                Traveller: %s
+                Origin: %s
+                Destination: %s
+                Dates: %s to %s
+                Budget level: %s
+                Interests: %s
+                """.formatted(
+                defaultValue(request.travellerName(), "Guest Traveller"),
+                defaultValue(request.originCity(), "Unknown"),
+                defaultValue(request.destinationCity(), "Unknown"),
+                formatDate(request.departureDate()),
+                formatDate(request.returnDate()),
+                defaultValue(request.budgetFocus(), "flexible"),
+                interests
+        );
     }
 
     private ChatStreamPayload executeStreamingPrompt(StreamSupplier supplier) {
@@ -210,7 +217,7 @@ public class VoyagerMateService {
                 .filter(Objects::nonNull)
                 .flatMap(response -> extractToolCalls(response).stream())
                 .distinct()
-                .collect(Collectors.toList());
+                .toList();
 
         var latency = latencyRef.get();
         if (latency < 0) {
@@ -223,8 +230,6 @@ public class VoyagerMateService {
     private String extractContent(ChatResponse chatResponse) {
         if (chatResponse == null) {
             return "";
-        } else {
-            chatResponse.getResult();
         }
         var output = chatResponse.getResult().getOutput();
         var text = output.getText();
@@ -240,8 +245,10 @@ public class VoyagerMateService {
     }
 
     private List<String> extractToolCalls(ChatResponse chatResponse) {
-        if (chatResponse == null || chatResponse.getResult() == null) {
+        if (chatResponse == null) {
             return List.of();
+        } else {
+            chatResponse.getResult();
         }
 
         var result = chatResponse.getResult();
@@ -253,8 +260,7 @@ public class VoyagerMateService {
 
         return toolCalls.stream()
                 .map(AssistantMessage.ToolCall::name)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private MimeType resolveMime(String value, MimeType fallback) {
