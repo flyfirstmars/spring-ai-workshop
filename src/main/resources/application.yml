@@ -10,19 +10,37 @@ spring:
       enabled: true
     noninteractive:
       enabled: false
+  # Session 3: PostgreSQL datasource for chat memory persistence
+  datasource:
+    url: jdbc:postgresql://localhost:5435/voyagermate
+    username: postgres
+    password: postgres
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
   ai:
     azure:
       openai:
-        endpoint: ${AZURE_OPENAI_ENDPOINT}
-        api-key: ${AZURE_OPENAI_API_KEY}
+        endpoint: ${DIAL_API_ENDPOINT}
+        api-key: ${DIAL_API_KEY}
         chat:
           options:
-            deployment-name: ${AZURE_OPENAI_CHAT_DEPLOYMENT:gpt-4o-mini}
+            deployment-name: ${DIAL_API_OPENAI_DEPLOYMENT:gpt-4o}
+            temperature: 1.0
         audio:
           transcription:
             options:
-              deployment-name: ${AZURE_OPENAI_TRANSCRIPTION_DEPLOYMENT:whisper-1}
+              deployment-name: ${DIAL_API_OPENAI_DEPLOYMENT:whisper-1}
               response-format: text
+    # Disable Spring AI's auto-schema initialization (we use Flyway)
+    chat:
+      memory:
+        jdbc:
+          initialize-schema: never
     retry:
       max-attempts: 3
       backoff:
@@ -44,3 +62,14 @@ logging:
     '[com.azure.core.http.netty.implementation.NettyUtility]': WARN
     # Suppress Azure SDK Netty version warnings
     '[com.azure]': WARN
+
+# VoyagerMate configuration
+voyagermate:
+  chat:
+    memory:
+      # Maximum messages to retain in sliding window (default: 20)
+      window-size: ${CHAT_MEMORY_WINDOW_SIZE:20}
+  etl:
+    # Document chunking settings for ETL pipeline
+    chunk-size: ${ETL_CHUNK_SIZE:800}
+    chunk-overlap: ${ETL_CHUNK_OVERLAP:100}

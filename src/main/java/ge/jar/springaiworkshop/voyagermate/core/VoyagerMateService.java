@@ -13,9 +13,11 @@ import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
+
+import static ge.jar.springaiworkshop.voyagermate.util.VirtualThreadExecutor.defaultValue;
+import static ge.jar.springaiworkshop.voyagermate.util.VirtualThreadExecutor.execute;
+import static ge.jar.springaiworkshop.voyagermate.util.VirtualThreadExecutor.formatDate;
+
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import org.springframework.ai.azure.openai.AzureOpenAiAudioTranscriptionModel;
@@ -160,7 +162,7 @@ public class VoyagerMateService {
 
     private ChatStreamPayload executeStreamingPrompt(StreamSupplier supplier) {
         var started = Instant.now();
-        var spec = executeOnVirtualThread(supplier::get, "Failed to prepare stream");
+        var spec = execute(supplier::get, "Failed to prepare stream");
         var firstTokenLatency = new AtomicLong(-1);
 
         Flux<ChatClientResponse> responses = spec.chatClientResponse()
@@ -181,7 +183,7 @@ public class VoyagerMateService {
 
     private ChatResponsePayload executePrompt(ResponseSupplier supplier) {
         var started = Instant.now();
-        var spec = executeOnVirtualThread(supplier::get, "Chat client call failed");
+        var spec = execute(supplier::get, "Chat client call failed");
         var latency = Duration.between(started, Instant.now()).toMillis();
         var response = spec.chatClientResponse();
 
@@ -288,14 +290,6 @@ public class VoyagerMateService {
         };
     }
 
-    private String defaultValue(String value, String fallback) {
-        return (value == null || value.isBlank()) ? fallback : value;
-    }
-
-    private String formatDate(java.time.LocalDate date) {
-        return date == null ? "unscheduled" : date.toString();
-    }
-
     @FunctionalInterface
     private interface ResponseSupplier {
         ChatClient.CallResponseSpec get();
@@ -304,22 +298,5 @@ public class VoyagerMateService {
     @FunctionalInterface
     private interface StreamSupplier {
         ChatClient.StreamResponseSpec get();
-    }
-
-    private <T> T executeOnVirtualThread(Callable<T> task, String failureMessage) {
-        var future = new FutureTask<>(task);
-        Thread.ofVirtual().start(future);
-        try {
-            return future.get();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException(failureMessage + " (interrupted)", ex);
-        } catch (ExecutionException ex) {
-            var cause = ex.getCause() != null ? ex.getCause() : ex;
-            if (cause instanceof RuntimeException runtimeEx) {
-                throw runtimeEx;
-            }
-            throw new IllegalStateException(failureMessage, cause);
-        }
     }
 }

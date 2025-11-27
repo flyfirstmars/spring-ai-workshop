@@ -2,9 +2,12 @@ package ge.jar.springaiworkshop.voyagermate.shell;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import ge.jar.springaiworkshop.voyagermate.core.ConversationService;
+import ge.jar.springaiworkshop.voyagermate.core.TravelDocumentService;
 import ge.jar.springaiworkshop.voyagermate.core.VoyagerMateService;
 import ge.jar.springaiworkshop.voyagermate.workflow.ItineraryRefinementWorkflowService;
 import ge.jar.springaiworkshop.voyagermate.workflow.ItineraryWorkflowService;
+import ge.jar.springaiworkshop.voyagermate.workflow.MultiAgentOrchestratorService;
 import ge.jar.springaiworkshop.voyagermate.workflow.OrchestratorWorkersWorkflowService;
 import ge.jar.springaiworkshop.voyagermate.workflow.ParallelItineraryWorkflowService;
 import ge.jar.springaiworkshop.voyagermate.workflow.VoyagerRoutingWorkflowService;
@@ -33,6 +36,12 @@ class VoyagerMateCommandsExceptionIntegrationTest {
     private VoyagerMateService voyagerMateService;
 
     @Mock
+    private ConversationService conversationService;
+
+    @Mock
+    private TravelDocumentService travelDocumentService;
+
+    @Mock
     private ItineraryWorkflowService itineraryWorkflowService;
 
     @Mock
@@ -48,6 +57,9 @@ class VoyagerMateCommandsExceptionIntegrationTest {
     private OrchestratorWorkersWorkflowService orchestratorWorkersWorkflowService;
 
     @Mock
+    private MultiAgentOrchestratorService multiAgentOrchestratorService;
+
+    @Mock
     private ObjectMapper objectMapper;
 
     private VoyagerMateCommands voyagerMateCommands;
@@ -61,11 +73,14 @@ class VoyagerMateCommandsExceptionIntegrationTest {
 
         voyagerMateCommands = new VoyagerMateCommands(
                 voyagerMateService,
+                conversationService,
+                travelDocumentService,
                 itineraryWorkflowService,
                 parallelItineraryWorkflowService,
                 voyagerRoutingWorkflowService,
                 itineraryRefinementWorkflowService,
                 orchestratorWorkersWorkflowService,
+                multiAgentOrchestratorService,
                 objectMapper);
     }
 
@@ -297,8 +312,4 @@ class VoyagerMateCommandsExceptionIntegrationTest {
         }
     }
 
-    @FunctionalInterface
-    interface TestScenario {
-        String get();
-    }
 }

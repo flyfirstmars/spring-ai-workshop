@@ -1,5 +1,8 @@
 package ge.jar.springaiworkshop.voyagermate.workflow;
 
+import static ge.jar.springaiworkshop.voyagermate.util.VirtualThreadExecutor.defaultValue;
+import static ge.jar.springaiworkshop.voyagermate.util.VirtualThreadExecutor.formatDate;
+
 import ge.jar.springaiworkshop.voyagermate.model.TripPlanRequest;
 import ge.jar.springaiworkshop.voyagermate.model.WorkerFinding;
 import ge.jar.springaiworkshop.voyagermate.model.WorkerWorkflowSummary;
@@ -89,14 +92,6 @@ public class OrchestratorWorkersWorkflowService {
                 defaultValue(request.budgetFocus(), "flexible"),
                 interests
         );
-    }
-
-    private String defaultValue(String value, String fallback) {
-        return (value == null || value.isBlank()) ? fallback : value;
-    }
-
-    private String formatDate(java.time.LocalDate date) {
-        return date == null ? "unscheduled" : date.toString();
     }
 
     interface TaskPlanner {

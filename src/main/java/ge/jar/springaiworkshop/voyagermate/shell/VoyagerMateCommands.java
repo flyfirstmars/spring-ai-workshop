@@ -3,9 +3,12 @@ package ge.jar.springaiworkshop.voyagermate.shell;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import ge.jar.springaiworkshop.voyagermate.core.ConversationService;
+import ge.jar.springaiworkshop.voyagermate.core.TravelDocumentService;
 import ge.jar.springaiworkshop.voyagermate.core.VoyagerMateService;
 import ge.jar.springaiworkshop.voyagermate.model.AudioChatRequest;
 import ge.jar.springaiworkshop.voyagermate.model.ChatResponsePayload;
+import ge.jar.springaiworkshop.voyagermate.model.ConversationHistory;
 import ge.jar.springaiworkshop.voyagermate.model.ImageChatRequest;
 import ge.jar.springaiworkshop.voyagermate.model.ItineraryPlan;
 import ge.jar.springaiworkshop.voyagermate.model.ParallelWorkflowSummary;
@@ -37,6 +40,8 @@ import org.springframework.shell.standard.ShellOption;
 public class VoyagerMateCommands {
 
     private final VoyagerMateService voyagerMateService;
+    private final ConversationService conversationService;
+    private final TravelDocumentService travelDocumentService;
     private final ItineraryWorkflowService itineraryWorkflowService;
     private final ParallelItineraryWorkflowService parallelItineraryWorkflowService;
     private final VoyagerRoutingWorkflowService voyagerRoutingWorkflowService;
@@ -46,6 +51,8 @@ public class VoyagerMateCommands {
     private final ObjectWriter jsonWriter;
 
     public VoyagerMateCommands(VoyagerMateService voyagerMateService,
+                               ConversationService conversationService,
+                               TravelDocumentService travelDocumentService,
                                ItineraryWorkflowService itineraryWorkflowService,
                                ParallelItineraryWorkflowService parallelItineraryWorkflowService,
                                VoyagerRoutingWorkflowService voyagerRoutingWorkflowService,
@@ -54,6 +61,8 @@ public class VoyagerMateCommands {
                                MultiAgentOrchestratorService multiAgentOrchestratorService,
                                ObjectMapper objectMapper) {
         this.voyagerMateService = voyagerMateService;
+        this.conversationService = conversationService;
+        this.travelDocumentService = travelDocumentService;
         this.itineraryWorkflowService = itineraryWorkflowService;
         this.parallelItineraryWorkflowService = parallelItineraryWorkflowService;
         this.voyagerRoutingWorkflowService = voyagerRoutingWorkflowService;
@@ -233,6 +242,263 @@ public class VoyagerMateCommands {
     @ShellMethod(key = "multi-agent-plan", value = "Plan a trip using a team of AI agents.")
     public String multiAgentPlan(@ShellOption(help = "Describe your trip request") String request) {
         return multiAgentOrchestratorService.planTrip(request);
+    }
+
+    // ==================== Session 3: Chat Memory Commands ====================
+
+    @ShellMethod(key = "chat-session", value = "Chat with VoyagerMate using persistent session memory.")
+    public String chatSession(
+            @ShellOption(value = {"-s", "--session"}, help = "Session ID for conversation tracking") String sessionId,
+            @ShellOption(value = {"-p", "--prompt"}, help = "Message to send") String prompt
+    ) {
+        try {
+            var response = conversationService.chat(sessionId, prompt);
+            return formatSessionChatResponse(sessionId, response);
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
+    }
+
+    @ShellMethod(key = "show-history", value = "Display conversation history for a session.")
+    public String showHistory(
+            @ShellOption(value = {"-s", "--session"}, help = "Session ID to retrieve history for") String sessionId
+    ) {
+        try {
+            ConversationHistory history = conversationService.getHistory(sessionId);
+            if (history.isEmpty()) {
+                return "No conversation history found for session: " + sessionId;
+            }
+            return formatConversationHistory(history);
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
+    }
+
+    @ShellMethod(key = "clear-history", value = "Clear conversation history for a session.")
+    public String clearHistory(
+            @ShellOption(value = {"-s", "--session"}, help = "Session ID to clear history for") String sessionId
+    ) {
+        try {
+            int messageCount = conversationService.getMessageCount(sessionId);
+            conversationService.clearHistory(sessionId);
+            return "Cleared " + messageCount + " messages from session: " + sessionId;
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
+    }
+
+    @ShellMethod(key = "list-sessions", value = "List all active conversation sessions.")
+    public String listSessions() {
+        try {
+            var sessions = conversationService.listSessions();
+            if (sessions.isEmpty()) {
+                return "No active conversation sessions found.";
+            }
+            var builder = new StringBuilder("Active Sessions (" + sessions.size() + "):\n");
+            for (var session : sessions) {
+                int count = conversationService.getMessageCount(session);
+                builder.append("  - ").append(session)
+                        .append(" (").append(count).append(" messages)\n");
+            }
+            return builder.toString().trim();
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
+    }
+
+    private String formatSessionChatResponse(String sessionId, ChatResponsePayload payload) {
+        return "Session: " + sessionId + System.lineSeparator() +
+                "Model: " + payload.model() + System.lineSeparator() +
+                "Latency: " + payload.latencyMs() + " ms" +
+                System.lineSeparator() + System.lineSeparator() +
+                payload.reply();
+    }
+
+    // ==================== Session 3: ETL Pipeline Commands ====================
+
+    @ShellMethod(key = "load-guides", value = "Load and process travel guide documents.")
+    public String loadGuides() {
+        try {
+            int guideCount = travelDocumentService.loadTravelGuides();
+            int destCount = travelDocumentService.loadDestinationData();
+            int total = travelDocumentService.getDocumentCount();
+
+            return String.format(
+                    "Documents loaded successfully!%n" +
+                            "  Travel guides: %d chunks%n" +
+                            "  Destination data: %d documents%n" +
+                            "  Total documents: %d%n%n" +
+                            "Use 'show-documents' to view loaded documents or 'search-docs' to search.",
+                    guideCount, destCount, total
+            );
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
+    }
+
+    @ShellMethod(key = "show-documents", value = "Display loaded documents with metadata.")
+    public String showDocuments(
+            @ShellOption(value = {"-t", "--type"}, defaultValue = ShellOption.NULL,
+                    help = "Filter by source type: markdown or json") String sourceType,
+            @ShellOption(value = {"-l", "--limit"}, defaultValue = "10",
+                    help = "Maximum documents to display") int limit
+    ) {
+        try {
+            var docs = sourceType != null
+                    ? travelDocumentService.getDocumentsByType(sourceType)
+                    : travelDocumentService.getLoadedDocuments();
+
+            if (docs.isEmpty()) {
+                return "No documents loaded. Run 'load-guides' first.";
+            }
+
+            var builder = new StringBuilder();
+            builder.append("Loaded Documents (").append(docs.size()).append(" total)")
+                    .append(System.lineSeparator())
+                    .append("─".repeat(60))
+                    .append(System.lineSeparator());
+
+            int shown = 0;
+            for (var doc : docs) {
+                if (shown >= limit) {
+                    builder.append(System.lineSeparator())
+                            .append("... and ").append(docs.size() - limit).append(" more documents");
+                    break;
+                }
+
+                builder.append(System.lineSeparator())
+                        .append("[Document ").append(shown + 1).append("]")
+                        .append(System.lineSeparator());
+
+                // Show metadata
+                var metadata = doc.getMetadata();
+                builder.append("  Source: ").append(metadata.getOrDefault("source_type", "unknown"))
+                        .append(System.lineSeparator());
+                if (metadata.containsKey("file_name")) {
+                    builder.append("  File: ").append(metadata.get("file_name"))
+                            .append(System.lineSeparator());
+                }
+                if (metadata.containsKey("destination_name")) {
+                    builder.append("  Destination: ").append(metadata.get("destination_name"))
+                            .append(System.lineSeparator());
+                }
+                if (metadata.containsKey("category")) {
+                    builder.append("  Category: ").append(metadata.get("category"))
+                            .append(System.lineSeparator());
+                }
+
+                // Show content preview (first 200 chars)
+                String content = doc.getText();
+                assert content != null;
+                String preview = content.length() > 200
+                        ? content.substring(0, 200) + "..."
+                        : content;
+                builder.append("  Content: ").append(preview.replace("\n", " "))
+                        .append(System.lineSeparator());
+
+                shown++;
+            }
+
+            return builder.toString();
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
+    }
+
+    @ShellMethod(key = "search-docs", value = "Search loaded documents by keyword.")
+    public String searchDocs(
+            @ShellOption(value = {"-q", "--query"}, help = "Search query") String query
+    ) {
+        try {
+            if (travelDocumentService.getDocumentCount() == 0) {
+                return "No documents loaded. Run 'load-guides' first.";
+            }
+
+            var results = travelDocumentService.searchDocuments(query);
+
+            if (results.isEmpty()) {
+                return "No documents found matching: " + query;
+            }
+
+            var builder = new StringBuilder();
+            builder.append("Found ").append(results.size()).append(" document(s) matching '")
+                    .append(query).append("'")
+                    .append(System.lineSeparator())
+                    .append("─".repeat(60))
+                    .append(System.lineSeparator());
+
+            int shown = 0;
+            for (var doc : results) {
+                if (shown >= 5) {
+                    builder.append(System.lineSeparator())
+                            .append("... and ").append(results.size() - 5).append(" more results");
+                    break;
+                }
+
+                builder.append(System.lineSeparator())
+                        .append("[Result ").append(shown + 1).append("]")
+                        .append(System.lineSeparator());
+
+                var metadata = doc.getMetadata();
+                builder.append("  Source: ").append(metadata.getOrDefault("source_type", "unknown"));
+                if (metadata.containsKey("destination_name")) {
+                    builder.append(" | ").append(metadata.get("destination_name"));
+                }
+                builder.append(System.lineSeparator());
+
+                // Show content with query highlighted (simple approach)
+                String content = doc.getText();
+                assert content != null;
+                String preview = content.length() > 300
+                        ? content.substring(0, 300) + "..."
+                        : content;
+                builder.append("  ").append(preview.replace("\n", " "))
+                        .append(System.lineSeparator());
+
+                shown++;
+            }
+
+            builder.append(System.lineSeparator())
+                    .append("Note: This is keyword search. Use RAG (Session 4) for semantic search.");
+
+            return builder.toString();
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
+    }
+
+    @ShellMethod(key = "clear-docs", value = "Clear all loaded documents from memory.")
+    public String clearDocs() {
+        try {
+            int count = travelDocumentService.getDocumentCount();
+            travelDocumentService.clearDocuments();
+            return "Cleared " + count + " documents from memory.";
+        } catch (Exception ex) {
+            return handleException(ex);
+        }
+    }
+
+    private String formatConversationHistory(ConversationHistory history) {
+        var builder = new StringBuilder()
+                .append("Session: ").append(history.sessionId())
+                .append(" (").append(history.messageCount()).append(" messages)")
+                .append(System.lineSeparator())
+                .append("─".repeat(50))
+                .append(System.lineSeparator());
+
+        for (var message : history.messages()) {
+            String role = switch (message.type()) {
+                case "USER" -> "You";
+                case "ASSISTANT" -> "VoyagerMate";
+                case "SYSTEM" -> "System";
+                default -> message.type();
+            };
+            builder.append("[").append(role).append("]").append(System.lineSeparator())
+                    .append(message.content()).append(System.lineSeparator())
+                    .append(System.lineSeparator());
+        }
+
+        return builder.toString().trim();
     }
 
     private String formatChatResponse(ChatResponsePayload payload) {

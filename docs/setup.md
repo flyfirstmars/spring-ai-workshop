@@ -18,8 +18,11 @@ running example, but the prep applies to any product you prototype during the se
 
 ## 2. Local Tooling
 
-- Install Java 25 (Temurin builds recommended) and Maven 3.9+.
-- Optional: install Docker Compose via Rancher Desktop for upcoming Postgres and vector store demos (Sessions 3-4).
+- Install Java 21+ (Temurin builds recommended) and Maven 3.9+.
+- Session 3+ requires a container runtime for PostgreSQL. Install one of:
+  - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+  - [Rancher Desktop](https://rancherdesktop.io/)
+  - [Podman](https://podman.io/)
 - Verify connectivity: `./mvnw -q -DskipTests spring-boot:run` should start the service.
 
 ## 3. Workshop Assets

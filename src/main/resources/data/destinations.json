@@ -1,0 +1,136 @@
+{
+  "destinations": [
+    {
+      "id": "tokyo",
+      "name": "Tokyo",
+      "country": "Japan",
+      "continent": "Asia",
+      "description": "Japan's bustling capital blending ultramodern and traditional",
+      "highlights": ["Senso-ji Temple", "Shibuya Crossing", "Meiji Shrine", "Tokyo Skytree"],
+      "bestMonths": ["March", "April", "May", "October", "November"],
+      "avgDailyBudget": {
+        "budget": 100,
+        "midRange": 200,
+        "luxury": 500
+      },
+      "currency": "JPY",
+      "language": "Japanese",
+      "timezone": "Asia/Tokyo",
+      "visaRequired": false,
+      "tags": ["culture", "food", "technology", "temples", "shopping"]
+    },
+    {
+      "id": "lisbon",
+      "name": "Lisbon",
+      "country": "Portugal",
+      "continent": "Europe",
+      "description": "Portugal's hilly coastal capital with historic trams and pastries",
+      "highlights": ["Belem Tower", "Alfama District", "Tram 28", "Jeronimos Monastery"],
+      "bestMonths": ["April", "May", "June", "September", "October"],
+      "avgDailyBudget": {
+        "budget": 60,
+        "midRange": 120,
+        "luxury": 300
+      },
+      "currency": "EUR",
+      "language": "Portuguese",
+      "timezone": "Europe/Lisbon",
+      "visaRequired": false,
+      "tags": ["history", "food", "beaches", "nightlife", "architecture"]
+    },
+    {
+      "id": "rome",
+      "name": "Rome",
+      "country": "Italy",
+      "continent": "Europe",
+      "description": "The Eternal City with ancient ruins and Renaissance art",
+      "highlights": ["Colosseum", "Vatican City", "Trevi Fountain", "Pantheon"],
+      "bestMonths": ["April", "May", "September", "October"],
+      "avgDailyBudget": {
+        "budget": 80,
+        "midRange": 150,
+        "luxury": 400
+      },
+      "currency": "EUR",
+      "language": "Italian",
+      "timezone": "Europe/Rome",
+      "visaRequired": false,
+      "tags": ["history", "art", "food", "architecture", "religion"]
+    },
+    {
+      "id": "barcelona",
+      "name": "Barcelona",
+      "country": "Spain",
+      "continent": "Europe",
+      "description": "Catalan capital famous for Gaudi architecture and vibrant culture",
+      "highlights": ["Sagrada Familia", "Park Guell", "La Rambla", "Gothic Quarter"],
+      "bestMonths": ["May", "June", "September", "October"],
+      "avgDailyBudget": {
+        "budget": 70,
+        "midRange": 140,
+        "luxury": 350
+      },
+      "currency": "EUR",
+      "language": "Spanish/Catalan",
+      "timezone": "Europe/Madrid",
+      "visaRequired": false,
+      "tags": ["architecture", "beaches", "food", "nightlife", "art"]
+    },
+    {
+      "id": "new-york",
+      "name": "New York City",
+      "country": "United States",
+      "continent": "North America",
+      "description": "The city that never sleeps with iconic skyline and diverse culture",
+      "highlights": ["Statue of Liberty", "Central Park", "Times Square", "Brooklyn Bridge"],
+      "bestMonths": ["April", "May", "September", "October", "December"],
+      "avgDailyBudget": {
+        "budget": 150,
+        "midRange": 300,
+        "luxury": 700
+      },
+      "currency": "USD",
+      "language": "English",
+      "timezone": "America/New_York",
+      "visaRequired": true,
+      "tags": ["culture", "food", "shopping", "entertainment", "art"]
+    }
+  ],
+  "travelTips": [
+    {
+      "category": "packing",
+      "tips": [
+        "Always pack a universal power adapter",
+        "Bring comfortable walking shoes",
+        "Keep copies of important documents",
+        "Pack light layers for variable weather"
+      ]
+    },
+    {
+      "category": "safety",
+      "tips": [
+        "Register with your embassy before traveling",
+        "Keep valuables in hotel safes",
+        "Be aware of common tourist scams",
+        "Have travel insurance for emergencies"
+      ]
+    },
+    {
+      "category": "money",
+      "tips": [
+        "Notify your bank before traveling abroad",
+        "Carry some local currency for small purchases",
+        "Use ATMs at banks for better exchange rates",
+        "Keep emergency cash separate from wallet"
+      ]
+    }
+  ]
+}
+
+
+
+
+
+
+
+
