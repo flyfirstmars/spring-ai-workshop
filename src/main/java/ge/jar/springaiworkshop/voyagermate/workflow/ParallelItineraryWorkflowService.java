@@ -1,5 +1,8 @@
 package ge.jar.springaiworkshop.voyagermate.workflow;
 
+import static ge.jar.springaiworkshop.voyagermate.util.VirtualThreadExecutor.defaultValue;
+import static ge.jar.springaiworkshop.voyagermate.util.VirtualThreadExecutor.formatDate;
+
 import ge.jar.springaiworkshop.voyagermate.model.ParallelWorkflowSummary;
 import ge.jar.springaiworkshop.voyagermate.model.TripPlanRequest;
 import jakarta.annotation.PreDestroy;
@@ -101,14 +104,6 @@ public class ParallelItineraryWorkflowService {
 
     private String cultureInstruction() {
         return "Suggest cultural immersion moves (festivals, community tours, mindful etiquette reminders).";
-    }
-
-    private String defaultValue(String value, String fallback) {
-        return (value == null || value.isBlank()) ? fallback : value;
-    }
-
-    private String formatDate(java.time.LocalDate date) {
-        return date == null ? "unscheduled" : date.toString();
     }
 
     @PreDestroy
